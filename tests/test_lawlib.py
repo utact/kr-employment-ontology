@@ -215,6 +215,12 @@ def test_a_name_with_digits_is_not_a_number():
     assert L.number_tokens("고용24 안내는 90일 안에 청구한다고 적는다.", notes=False) == [("number", 90, "일")]
 
 
+def test_bracketed_notes_drop_their_numbers_but_bracketed_text_keeps_them():
+    assert L.number_tokens("일 것 <개정 2019.1.15>\n[본조신설 2020.6.9]\n[제5호의2는 제11호로 이동<2016.10.18>]") == []
+    text = "월평균금액[최종 계약이 없는 경우에는 다른 계약(계약 기간이 1개월 이상인 것만 해당한다)의 월평균금액을 말한다]보다 작을 것"
+    assert L.number_tokens(text) == [("number", 1, "개월")]
+
+
 def test_notice_preamble_keeps_the_lines_of_its_개정문():
     service = {"개정문": {"개정문내용": [["⊙고용노동부고시 제2022-116호", "  「고용보험법」 제2조제5호 단서에 따라 고시합니다."]]}}
     assert L.notice_preamble(service) == "⊙고용노동부고시 제2022-116호\n  「고용보험법」 제2조제5호 단서에 따라 고시합니다."

@@ -342,6 +342,7 @@ Scripts check quotes, numbers and hashes against texts derived from the canonica
   - Join the wrapped lines of a table cell, and every line of 별표, 별지 서식 and PDF text, without a break, because they wrap in the middle of words, as `210` and `만원` in 고용보험법 시행규칙 별지 제52호서식.
   - Keep the lines of 조문 fields apart, because each is a 항, 호 or 목.
   - In statute text, leave out the numbers of bracketed notes, such as `<개정 2019.1.15>` and `[본조신설 2020.6.9]`. In wiki notes, check them.
+  - Keep the numbers of bracketed text that belongs to the provision, such as 1개월 in the brackets of 고용보험법 시행령 제104조의8제1항제2호가목.
 - Read numbers in these forms.
   - Digits with or without commas, such as 113,500
   - Korean units, such as 11만3500원 and 3천만원
