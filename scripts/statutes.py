@@ -1116,13 +1116,13 @@ def render_notice(source, as_of):
             continue
         text = L.notice_text(response["AdmRulService"], L.note_attachments(note, response))
         preamble = L.notice_preamble(response["AdmRulService"])
-        body += [f"## {iso(effective)} 시행 ({label})", "", f"{info[effective]['행정규칙명']}, {issued}", ""]
+        body += [f"## {iso(effective)} 시행 ({label})", "", f"{L.clean_name(info[effective]['행정규칙명'])}, {issued}", ""]
         if preamble:
             body += ["```text", preamble.rstrip("\n"), "```", "", f"^v{effective}-preamble", ""]
             blocks[f"v{effective}-preamble"] = L.sha256(L.version_text(preamble))
         body += ["```text", text.rstrip("\n"), "```", "", f"^v{effective}-t", ""]
         blocks[f"v{effective}-t"] = L.sha256(L.version_text(text))
-    name = info[current]["행정규칙명"]
+    name = L.clean_name(info[current]["행정규칙명"])
     meta = {
         "type": "LegalResource",
         "identifier": identifier,
@@ -1169,7 +1169,7 @@ class Rule:
         self.listing = json.loads(listing.read_text(encoding="utf-8")) if listing.exists() else {}
         self.current = L.in_force(self.notes, as_of)
         self.scheduled = [d for d in self.notes if d > self.current]
-        self.name = self.versions[self.current]["행정규칙기본정보"]["행정규칙명"]
+        self.name = L.clean_name(self.versions[self.current]["행정규칙기본정보"]["행정규칙명"])
         self._units = {}
 
     def needed(self):

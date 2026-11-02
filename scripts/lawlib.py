@@ -89,6 +89,11 @@ def now():
     return stamp, stamp.strftime("%Y%m%dT%H%M")
 
 
+def clean_name(name):
+    """A name from 법제처 with its runs of whitespace collapsed, such as the trailing space of a 2026 고시 name."""
+    return " ".join(name.split())
+
+
 def as_list(value):
     if value is None:
         return []
@@ -544,8 +549,8 @@ def notice_text(service, attachments):
     attachments are (content, file name) pairs in the order of the response.
     """
     text = "\n".join(flatten(service.get("조문내용")))
-    name = service["행정규칙기본정보"]["행정규칙명"]
-    pdf = next((data for data, file_name in attachments if file_name.lower().endswith(".pdf") and name in file_name), None)
+    name = clean_name(service["행정규칙기본정보"]["행정규칙명"])
+    pdf = next((data for data, file_name in attachments if file_name.lower().endswith(".pdf") and name in clean_name(file_name)), None)
     return "\n".join(x for x in (text, pdf_text(pdf) if pdf else "") if x)
 
 

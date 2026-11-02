@@ -146,6 +146,7 @@ The vault has three layers: raw sources that are never edited, the wiki that the
 - Name statute notes with the law name and the unit.
   - Examples: `고용보험법 제40조`, `고용보험법 별표 1`, `고용보험법 시행규칙 별지 제6호서식`, `고용보험법 부칙 제21473호`
   - When two 부칙 of a law share a 공포번호, add the 공포일자 in parentheses, as in `고용보험법 시행규칙 부칙 제263호 (2019. 9. 30.)` and `고용보험법 시행규칙 부칙 제263호 (2019. 10. 15.)`.
+  - Collapse runs of whitespace in a name that 법제처 gives, such as the trailing space of the 2026 `예술인의 실업인정대상기간 중 발생한 1일 평균소득에서 제외하는 금액 고시`.
 - Give a unit a new version only when its version text, defined in Text checks, changes.
   - A change of the amendment tags alone also makes a new version, because the tag records an amendment, as in 32 of 1,537 unit changes up to 2026-10-15.
   - Date the version by the 시행일자 of the earliest law version in the latest unbroken run of versions that have this text of the unit. This is the version's `firstDateEntryInForce`.

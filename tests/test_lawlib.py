@@ -226,3 +226,8 @@ def test_notice_preamble_keeps_the_lines_of_its_개정문():
     assert L.notice_preamble(service) == "⊙고용노동부고시 제2022-116호\n  「고용보험법」 제2조제5호 단서에 따라 고시합니다."
     assert L.notice_preamble({"개정문": ""}) == ""
     assert L.notice_preamble({}) == ""
+
+
+def test_clean_name_collapses_whitespace_from_the_source():
+    assert L.clean_name("예술인의 실업인정대상기간 중 발생한 1일 평균소득에서 제외하는 금액 고시 ") == "예술인의 실업인정대상기간 중 발생한 1일 평균소득에서 제외하는 금액 고시"
+    assert L.clean_name("1일 평균소득에서  제외하는 금액 고시") == "1일 평균소득에서 제외하는 금액 고시"
