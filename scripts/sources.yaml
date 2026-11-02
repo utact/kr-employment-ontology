@@ -71,6 +71,12 @@ admrul:
     id: "22212"
   - query: 직업능력개발 훈련 거부 등에 따른 구직급여 지급 정지기간 고시
     id: "22215"
+  - query: 예술인의 실업인정대상기간 중 발생한 1일 평균소득
+    id: "75438"
+  - query: 노무제공자의 실업인정대상기간 중 발생한 1일 평균소득
+    id: "79172"
+  - query: 예술인의 기준보수
+    id: "75039"
 work24:
   - name: 실업급여(상용직)
     url: https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000254&systCnntId=&systId=SI00000411
