@@ -642,44 +642,19 @@ An entry for ingesting 고용보험법 looks like this.
 <!-- roadock-template: 1 -->
 ## ROADOCK
 
-[Template source](https://github.com/utact/roadock/blob/main/templates/roadock-agent.md)
-
-- Maintain `TODO.md` under `## Human` and `## Agent`; subheadings inherit the owner.
-- Assign ownership by who must act, not importance.
-- Human: only actions the agent cannot perform that require user intervention for current or next work.
-  Examples: issuing credentials, account setup, granting access, physical-device tests, and decisions that block progress.
-- Do not create Human tasks for abstract policy reviews, generic approvals, routine design choices, or speculative future decisions.
-- Agent: implementation, investigation, design, technical decisions, and verification.
-  Choose reasonable defaults within the user's instructions.
-  Unscoped tasks are treated as Agent.
-- Focus on actionable current and next steps, with immediately actionable pending tasks first.
-  Avoid speculative or duplicate tasks; retain all necessary work even when the list is long.
-- Write one self-contained Korean action per task, preferably within 24 characters including spaces, excluding metadata.
-  Prioritize clarity over the length target.
-- Give each Human task a unique, stable `<!-- roadock:task-id -->` suffix; preserve it when editing or moving the task.
-- Add `Requires: task-id` below an Agent task only when an incomplete Human task blocks that action.
-  Separate multiple Human IDs with commas.
-  Continue independent Agent work.
-- Read `TODO.md` before work; update affected tasks and next steps with related changes.
-- Never mark Human tasks complete without user confirmation.
-- Refresh remote changes before editing or pushing; preserve mobile Human completions when resolving conflicts.
-- Add indented plain-text notes directly below a task when its scope or completion criteria need context.
-  Indent notes at least two spaces beyond the checkbox line; keep them before child tasks or headings.
-  Use short paragraphs and Markdown links to relevant project documents. Never include secrets.
-- Roadock displays task text, Human/Agent labels, and waiting labels for `Requires`.
-  Notes appear in task details in the app; headings stay hidden. Dependencies are informational, not enforced.
-- Commit checklist updates with related changes; push only with explicit approval.
-
-```markdown
-## Human
-- [ ] API 키 발급 <!-- roadock:api-key -->
-  서비스에서 프로젝트용 키를 발급하고 앱의 인증 설정에 등록한다. 키 값은 이 파일에 적지 않는다.
-
-## Agent
-- [ ] 인증 방식 비교·설계
-  기존 권한과 비용을 비교하고 기본안을 정한다. 키 발급을 기다리지 않고 진행한다.
-- [ ] 발급 키로 API 호출 검증
-  Requires: api-key
-  실제 응답과 인증 실패 처리를 확인한다.
-```
+- Keep `TODO.md` under `## Human` and `## Agent`. Subheadings inherit the owner.
+- Human owns actions only the user can perform: credentials, access, device acceptance, and blocking decisions.
+- Agent owns implementation, investigation, design, and verification. Choose routine defaults; unscoped tasks belong to Agent.
+- Keep current and next actions, with unblocked work first. Merge duplicates and remove canceled work.
+- Write one clear Korean action per task, preferably within 24 characters excluding metadata.
+- Give Human tasks unique `<!-- roadock:task-id -->` suffixes. Preserve IDs when editing or moving tasks.
+- Use `Requires: id, id` only for blocking, incomplete Human tasks. Continue independent work and remove resolved dependencies.
+- Read TODO before work and update it with related changes.
+- Mark completion with `[x]` and keep recent results visible. Prune completed tasks once they no longer help current or next work.
+- Preserve unresolved work and necessary context when pruning. Use Git history for past progress.
+- Complete Human tasks only with user confirmation.
+- Refresh remote changes before editing or pushing. Preserve mobile Human completions.
+- Indent scope notes at least two spaces beyond the checkbox. Place them before child tasks or headings; link to details and exclude secrets.
+- Roadock hides headings and shows notes in task details. Dependencies are informational, not enforced.
+- Commit checklist updates with related changes. Push only with explicit approval.
 <!-- /roadock-template -->
