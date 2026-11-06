@@ -77,6 +77,10 @@ admrul:
     id: "79172"
   - query: 예술인의 기준보수
     id: "75039"
+  - query: 노무제공자의 기준보수
+    id: "78114"
+  - query: 기초일액
+    id: "79171"
 work24:
   - name: 실업급여(상용직)
     url: https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000254&systCnntId=&systId=SI00000411
