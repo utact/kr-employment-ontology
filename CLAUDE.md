@@ -322,6 +322,7 @@ Scripts check quotes, numbers and hashes against texts derived from the canonica
   - 별표 and 별지 서식: 별표내용
   - 부칙: 부칙내용
   - 고시: 조문내용, then the text extracted from the PDF attachment named after the 고시, because some years keep the text only there
+    - Without such a PDF, take the one whose name carries the 발령번호, as `(고용노동부고시 제2026-47호)` for the 고시 that 법제처 names with 고용보험 산정 while its file says 고용보험료 산정.
   - 개정문 of a 고시: 개정문내용
   - 고용24 guide: the text of the body area, section by section as its table of contents lists them
 - Keep amendment tags such as `<개정 2019.1.15>`.

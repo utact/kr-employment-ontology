@@ -228,6 +228,17 @@ def test_notice_preamble_keeps_the_lines_of_its_개정문():
     assert L.notice_preamble({}) == ""
 
 
+def test_notice_text_takes_the_pdf_named_after_the_notice_or_carrying_its_number(monkeypatch):
+    monkeypatch.setattr(L, "pdf_text", lambda data: data.decode())
+    info = {"행정규칙명": "기초일액 고용보험 산정 고시", "발령번호": "2026-47"}
+    service = {"조문내용": "본문", "행정규칙기본정보": info}
+    named = [(b"other", "설명자료.pdf"), (b"named", "기초일액 고용보험 산정 고시.pdf")]
+    assert L.notice_text(service, named) == "본문\nnamed"
+    numbered = [(b"other", "설명자료.pdf"), (b"numbered", "(고용노동부고시 제2026-47호)기초일액 고용보험료 산정 고시.pdf")]
+    assert L.notice_text(service, numbered) == "본문\nnumbered"
+    assert L.notice_text(service, [(b"other", "(양식)조문별제개정이유서.pdf")]) == "본문"
+
+
 def test_clean_name_collapses_whitespace_from_the_source():
     assert L.clean_name("예술인의 실업인정대상기간 중 발생한 1일 평균소득에서 제외하는 금액 고시 ") == "예술인의 실업인정대상기간 중 발생한 1일 평균소득에서 제외하는 금액 고시"
     assert L.clean_name("1일 평균소득에서  제외하는 금액 고시") == "1일 평균소득에서 제외하는 금액 고시"

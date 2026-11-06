@@ -546,11 +546,18 @@ def notice_text(service, attachments):
     """Text of a 고시: its 조문내용, then the text of the PDF attachment named after it.
 
     Some years keep the text only in the PDF, and 조문내용 is empty or points to the attachment.
+    Without a PDF named after the 고시, the PDF whose name carries its 발령번호 is the 고시.
+    An example is "(고용노동부고시 제2026-47호)…고용보험료 산정…" for a 고시 that 법제처 names "고용보험 산정".
     attachments are (content, file name) pairs in the order of the response.
     """
     text = "\n".join(flatten(service.get("조문내용")))
-    name = clean_name(service["행정규칙기본정보"]["행정규칙명"])
-    pdf = next((data for data, file_name in attachments if file_name.lower().endswith(".pdf") and name in clean_name(file_name)), None)
+    info = service["행정규칙기본정보"]
+    name = clean_name(info["행정규칙명"])
+    pdfs = [(data, file_name) for data, file_name in attachments if file_name.lower().endswith(".pdf")]
+    pdf = next((data for data, file_name in pdfs if name in clean_name(file_name)), None)
+    number = info.get("발령번호") or ""
+    if pdf is None and number:
+        pdf = next((data for data, file_name in pdfs if f"제{number}호" in file_name), None)
     return "\n".join(x for x in (text, pdf_text(pdf) if pdf else "") if x)
 
 
