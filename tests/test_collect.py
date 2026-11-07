@@ -108,3 +108,39 @@ def test_check_raw_finds_an_interpretation_of_another_case(tmp_path, monkeypatch
     check_raw.check_interpretations({"interpretations": [{"id": "343439"}]}, problems)
     assert any("response is of 법령해석례 339523" in p for p in problems)
     assert any("343439 not collected" in p for p in problems)
+
+
+PRECEDENT = {"PrecService": {"판례정보일련번호": "195380", "사건번호": "2015두44165", "선고일자": "20180424", "법원명": "대법원",
+                             "사건명": "조기재취업수당부지급처분취소", "판결유형": "판결",
+                             "판시사항": "<br/>  ‘고용된 경우’의 해석",
+                             "판결요지": "<br/>  일시 중단된 기간도 &quot;계속 고용된 기간&quot;에<br/>포함된다고 보아야 한다.", "판례내용": "【주    문】<br/>  원심판결을 파기한다."}}
+
+
+def precedent(tmp_path, response=PRECEDENT):
+    import json
+    folder = tmp_path / "raw" / "law" / "판례"
+    folder.mkdir(parents=True)
+    stem = "판례 2015두44165 20261108T0200"
+    (folder / f"{stem}.json").write_text(json.dumps(response, ensure_ascii=False), encoding="utf-8")
+    (folder / f"{stem}.md").write_text("---\nidentifier: raw-prec-195380-20261108t0200\ntitle: 판례\n---\n\n시험용 원문 노트다.\n",
+                                       encoding="utf-8", newline="\n")
+    return folder / f"{stem}.md"
+
+
+def test_quote_takes_a_precedent_across_its_line_breaks(tmp_path):
+    note = precedent(tmp_path)
+    text = "일시 중단된 기간도 \"계속 고용된 기간\"에 포함된다고 보아야 한다."
+    assert collect.quote("판례 2015두44165", "판결요지", text, raw=tmp_path / "raw") == 1
+    assert collect.quotations(note) == {"q1": text}
+    with pytest.raises(SystemExit):
+        collect.quote("판례 2015두44165", "판시사항", "원심판결을 파기한다.", raw=tmp_path / "raw")
+
+
+def test_check_raw_finds_a_precedent_of_another_case(tmp_path, monkeypatch):
+    import check_raw
+    precedent(tmp_path, {"PrecService": dict(PRECEDENT["PrecService"], 판례정보일련번호="159916")})
+    monkeypatch.setattr(collect.L, "RAW", tmp_path / "raw")
+    problems = []
+    check_raw.check_precedents({"precedents": [{"id": "195380"}]}, problems)
+    assert any("response is of 판례 159916" in p for p in problems)
+    assert any("195380 not collected" in p for p in problems)

@@ -119,6 +119,15 @@ interpretations:
   - id: "343645"
   - id: "338875"
   - id: "330985"
+precedents:
+  - id: "195380"
+  - id: "159916"
+  - id: "194389"
+  - id: "213631"
+  - id: "208789"
+  - id: "125316"
+  - id: "233061"
+  - id: "147839"
 shapes:
   - name: CPSV-AP 3.2.0
     file: cpsv-ap-3.2.0-shacl.ttl

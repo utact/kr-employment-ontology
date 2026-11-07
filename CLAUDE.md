@@ -49,7 +49,7 @@ The vault has three layers: raw sources that are never edited, the wiki that the
   - It explains each removed unit by 조문이동이전, or by an earlier version in which the whole unit was a deletion, such as `제22조 삭제 <2006.12.28>`.
   - It works per unit: one matching tag explains every change in the unit.
 - Use one folder per publisher.
-  - `raw/law/`: 법제처, for both 법령 and 행정규칙
+  - `raw/law/`: 법제처, for 법령, 행정규칙, 법령해석례 and 판례
   - `raw/work24/`: 고용24 guides
   - `raw/stats/`: EIS, KOSIS and 공공데이터포털
 - Give every raw note a basename that is unique in the vault: the source name, its version and the retrieval time in KST.
@@ -61,6 +61,7 @@ The vault has three layers: raw sources that are never edited, the wiki that the
   - Keep version lists as `<법령명> versions <YYYYMMDDTHHMM>.json`.
   - 위임조문 data: `raw/law/<법령명> 위임조문/<법령명> 위임조문 <시행일자>-<MST> <YYYYMMDDTHHMM>.md`, in its own folder so that it stays apart from the versions of the law
   - 법령해석례: `raw/law/법령해석례/법령해석례 <안건번호> <YYYYMMDDTHHMM>.md`, with the response next to it as `.json`
+  - 판례: `raw/law/판례/판례 <사건번호> <YYYYMMDDTHHMM>.md`, with the response next to it as `.json`
 - Collect these versions of every 법령 and 행정규칙 in scope.
   - The current version
   - Every scheduled version (시행예정)
@@ -69,6 +70,10 @@ The vault has three layers: raw sources that are never edited, the wiki that the
 - Collect the 법령해석례 of 법제처 listed under `interpretations` in `scripts/sources.yaml` with `scripts/collect.py interpretations`.
   - List one when it interprets a provision that the wiki states or a question callout asks about, such as 법령해석례 26-0321 on counting a period of days under 행정기본법 제6조제1항 and 민법.
   - Quote its 질의요지, 회답 or 이유 with `scripts/collect.py quote "법령해석례 <안건번호>" <section> "<text>"`, as for a 고용24 guide.
+- Collect the 판례 of 대법원 listed under `precedents` in `scripts/sources.yaml` with `scripts/collect.py precedents`.
+  - List one when it interprets a provision that the wiki states or a question callout asks about, such as 대법원 2015두44165 on 고용된 경우 in 고용보험법 시행령 제84조제1항제1호.
+  - Quote its 판시사항, 판결요지 or 판례내용 with `scripts/collect.py quote "판례 <사건번호>" <section> "<text>"`.
+  - A 판례 often interprets an earlier version, as 2015두44165 does the 시행령 before 2014-01-01. Cite it for the current version only when the interpreted text is the same, and name both versions in the note.
 - Collect the 위임조문 data of the current version of every 법률 and 시행령 in scope.
   - It names each provision that delegates to a 시행령 or 시행규칙 and the article that receives it.
   - 법제처 keeps it for its 현행 version only, so collect it again when a new version comes into force. `scripts/collect.py` stores no response of another version, and `scripts/check_raw.py` fails when the current version lacks it.
@@ -100,10 +105,10 @@ The vault has three layers: raw sources that are never edited, the wiki that the
   - Any change in a response makes a new raw note, even in a field outside the text, such as a contact number.
   - For a 고용24 guide, whose page stays out of Git, use the text of its body area without whitespace, section by section. This hash changes when the reading of the page changes.
 - Record the terms of use in `license`.
-  - Statutes: not protected works under 저작권법 제7조
+  - Statutes and 판례: not protected works under 저작권법 제7조
   - Other sources: the 공공누리 type or the 공공데이터포털 terms of use, such as 이용허락범위 제한 없음 for the 법령해석 data of 법제처
 - Never edit a saved source.
-  - The only allowed edits are appending a quotation to `hasPart` of a 고용24 or 법령해석례 raw note, and recomputing `sha256` in every raw note in one `schema` operation when its definition changes.
+  - The only allowed edits are appending a quotation to `hasPart` of a 고용24, 법령해석례 or 판례 raw note, and recomputing `sha256` in every raw note in one `schema` operation when its definition changes.
   - On re-collection, write a new note with the new retrieval time.
   - Skip it if its `sha256` equals that of the previous retrieval.
 
@@ -266,7 +271,7 @@ decisionTable:
   - 단서, 본문, 전단 and 후단: link the block, and name the part in the label, only when the block has it
   - Items of a 별표 or 서식: link the block, and name the item in the label, as in `고용보험법 시행령 별표 2 제1호나목`
   - 항 and 호 of a 행정규칙 article: link the block, and name them in the label, as in `실업인정 및 재취업지원규정 제12조제2항제1호`
-  - 법령해석례 and 고용24 guides: a quotation block of the raw note, labelled with the name of the source, as in `[^2]: [[법령해석례 26-0321 20261019T2045#^q1|법제처 법령해석례 26-0321]]`
+  - 판례, 법령해석례 and 고용24 guides: a quotation block of the raw note, labelled with the name of the source, as in `[^2]: [[법령해석례 26-0321 20261019T2045#^q1|법제처 법령해석례 26-0321]]` and `대법원 2015두44165 판결`
   - Decisions of the human owner: a block of `docs/decisions.md`, next to the blocks the reading rests on, as described in Decisions
   - A footnote to a whole raw note rests only on its frontmatter and the basic information of its response, such as 시행일자 and 공포번호.
 - Quote statutory text verbatim inside “ ” (U+201C and U+201D), followed directly by its footnote.
@@ -294,9 +299,10 @@ decisionTable:
   2. 시행령
   3. 시행규칙
   4. 고시·행정규칙
-  5. 법령해석례 of 법제처, which interpret the statutes above without binding as they do
-  6. 고용24 official guides
-  7. Statistics
+  5. 판례 of 대법원, the final judicial reading of the statutes above
+  6. 법령해석례 of 법제처, which interpret the statutes above without binding as they do
+  7. 고용24 official guides
+  8. Statistics
 - State a fact from the highest-ranked source.
   - When a lower-ranked source says otherwise, add a `> [!warning] 출처 불일치` callout that quotes both.
   - When sources of the same rank disagree, record both under a `> [!warning] 출처 충돌` callout and never pick one yourself.
@@ -324,6 +330,8 @@ Scripts check quotes, numbers and hashes against texts derived from the canonica
   - 고시: 조문내용, then the text extracted from the PDF attachment named after the 고시, because some years keep the text only there
     - Without such a PDF, take the one whose name carries the 발령번호, as `(고용노동부고시 제2026-47호)` for the 고시 that 법제처 names with 고용보험 산정 while its file says 고용보험료 산정.
   - 개정문 of a 고시: 개정문내용
+  - 법령해석례: 질의요지, 회답 and 이유
+  - 판례: 판시사항, 판결요지 and 판례내용, with the tags of the response as line breaks
   - 고용24 guide: the text of the body area, section by section as its table of contents lists them
 - Keep amendment tags such as `<개정 2019.1.15>`.
 - Read the text in cell order before any comparison.

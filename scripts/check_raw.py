@@ -281,9 +281,11 @@ def check_notes(problems):
 
 
 def check_quotations(problems):
-    """Quotations of 고용24 and 법령해석례 raw notes: numbered in the order of hasPart, declared as blocks with the same text, hashed, and found in the stored source."""
-    folder = L.RAW / "law" / L.INTERPRETATIONS
-    for note in sorted((L.RAW / "work24").rglob("*.md")) + (sorted(folder.glob("*.md")) if folder.exists() else []):
+    """Quotations of 고용24, 법령해석례 and 판례 raw notes: numbered in the order of hasPart, declared as blocks with the same text, hashed, and found in the stored source."""
+    notes = sorted((L.RAW / "work24").rglob("*.md"))
+    for kind in (L.INTERPRETATIONS, L.PRECEDENTS):
+        notes += sorted((L.RAW / "law" / kind).glob("*.md"))
+    for note in notes:
         where = note.relative_to(L.VAULT)
         meta = L.frontmatter(note)
         parts = meta.get("hasPart") or []
@@ -319,6 +321,20 @@ def check_interpretations(sources, problems):
             problems.append(f"법령해석례 {source['id']} not collected")
 
 
+def check_precedents(sources, problems):
+    """Every 판례 in sources.yaml is collected, and each raw note answers for the 판례 its name and identifier give."""
+    found = set()
+    for note in sorted((L.RAW / "law" / L.PRECEDENTS).glob("*.md")):
+        service = load(note.with_suffix(".json"))["PrecService"]
+        identifier = L.frontmatter(note).get("identifier", "")
+        if not identifier.startswith(f"raw-prec-{service['판례정보일련번호']}-") or not note.stem.startswith(f"{L.PRECEDENTS} {service['사건번호']} "):
+            problems.append(f"{note.name}: response is of 판례 {service['판례정보일련번호']} ({service['사건번호']})")
+        found.add(service["판례정보일련번호"])
+    for source in sources.get("precedents", []):
+        if source["id"] not in found:
+            problems.append(f"판례 {source['id']} not collected")
+
+
 def check_secrets(problems, notes):
     secrets = L.secrets()
     if not secrets:
@@ -345,6 +361,7 @@ def main():
     check_notices(problems, notes)
     check_notes(problems)
     check_interpretations(sources, problems)
+    check_precedents(sources, problems)
     check_quotations(problems)
     check_secrets(problems, notes)
     for line in notes:

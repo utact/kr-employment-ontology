@@ -373,6 +373,46 @@ def collect_interpretations(stamp, generated, report):
         print(f"법령해석례 {source['id']} ({service['안건번호']}): written {written}")
 
 
+PRECEDENT_SECTIONS = ("판시사항", "판결요지", "판례내용")
+
+
+def precedent_sections(response):
+    """The sections of a 판례 that quotations come from: 판시사항, 판결요지 and 판례내용, with the tags of the response as line breaks."""
+    service = response["PrecService"]
+    return {name: htmllib.unescape(re.sub(r"<[^>]+>", "\n", service.get(name) or "")) for name in PRECEDENT_SECTIONS}
+
+
+def collect_precedents(stamp, generated, report):
+    """The 판례 listed in sources.yaml, one raw note per retrieval with its response."""
+    folder = L.RAW / "law" / L.PRECEDENTS
+    for source in SOURCES.get("precedents", []):
+        text, url = L.law_api("lawService", target="prec", ID=source["id"])
+        response = json.loads(text)
+        service = response["PrecService"]
+        if service.get("판례정보일련번호") != source["id"] or not L.canonical("".join(precedent_sections(response).values())):
+            raise ValueError(f"판례 {source['id']}: the response is of another 판례 or has no text")
+        basename = f"{L.PRECEDENTS} {service['사건번호']} {stamp}"
+        digest = L.files_hash(L.json_payload(text))
+        written = not unchanged(folder, basename, digest)
+        if written:
+            L.write_json(folder / f"{basename}.json", text)
+            meta = {
+                "identifier": f"raw-prec-{source['id']}-{stamp.lower()}",
+                "title": f"{service['법원명']} {service['사건번호']} {service['사건명'].strip()}",
+                "publisher": L.PUBLISHERS["law"],
+                "url": url,
+                "generatedAtTime": generated,
+                "sha256": digest,
+                "license": L.LICENSES["precedent"],
+            }
+            day = service["선고일자"]
+            body = (f"{service['법원명']}이 {day[:4]}-{day[4:6]}-{day[6:]}에 선고한 {service['사건번호']} {service['판결유형']}의 원문 노트다. "
+                    "원문 응답은 같은 이름의 JSON 파일이다.")
+            L.write_note(folder / f"{basename}.md", meta, body)
+        report.setdefault("precedents", []).append({"id": source["id"], "number": service["사건번호"], "written": written})
+        print(f"판례 {source['id']} ({service['사건번호']}): written {written}")
+
+
 def quote_source(note):
     """The sections a quotation of a raw note must come from, or None when the source is not stored here."""
     payload, page = note.with_suffix(".json"), note.with_suffix(".html")
@@ -380,6 +420,8 @@ def quote_source(note):
         response = json.loads(payload.read_text(encoding="utf-8"))
         if "ExpcService" in response:
             return interpretation_sections(response)
+        if "PrecService" in response:
+            return precedent_sections(response)
     if page.exists():
         return page_sections(page.read_text(encoding="utf-8"), L.frontmatter(note)["title"])[0]
     return None
@@ -395,12 +437,15 @@ def quotations(note):
 
 
 def quote(name, section, text, raw=None):
-    """Append a quotation to hasPart of the latest raw note of a guide or 법령해석례 and declare it as a block ^q<n> in the body.
+    """Append a quotation to hasPart of the latest raw note of a guide, 법령해석례 or 판례 and declare it as a block ^q<n> in the body.
 
-    A 법령해석례 is named by 법령해석례 and its 안건번호, as "법령해석례 26-0321".
+    A 법령해석례 is named by 법령해석례 and its 안건번호, as "법령해석례 26-0321", and a 판례 by 판례 and its 사건번호, as "판례 2015두44165".
     """
     root = raw or L.RAW
-    folder = root / "law" / L.INTERPRETATIONS if name.startswith(f"{L.INTERPRETATIONS} ") else root / "work24" / name
+    folder = root / "work24" / name
+    for kind in (L.INTERPRETATIONS, L.PRECEDENTS):
+        if name.startswith(f"{kind} "):
+            folder = root / "law" / kind
     note = latest(folder, f"{name} *.md")
     if note is None:
         sys.exit(f"no raw note of {name}")
@@ -474,6 +519,8 @@ def main():
         collect_work24(stamp, generated, report)
     if what in ("interpretations", "all"):
         collect_interpretations(stamp, generated, report)
+    if what in ("precedents", "all"):
+        collect_precedents(stamp, generated, report)
     if what in ("shapes", "all"):
         collect_shapes(generated, report)
     if what in ("cited", "all"):
