@@ -481,6 +481,11 @@ Lint compares each number with the cited blocks, not the claim it makes. A sente
   - Deleted articles do not count.
 - An article is covered when a note other than a statute note links to it or to one of its blocks.
 - Leave out only an article that governs a matter other than 이직 and 실업급여, such as 출산전후급여 or the organization of 고용보험심사위원회.
+- Put under `defer` the 장 and articles that the human owner has put off to a later phase, with the matter as the reason, as recorded in `docs/decisions.md`.
+  - They stay out of the count, together with the articles they delegate to.
+  - The report lists them by reason, with those that no note cites yet, so that they can be taken up later.
+- Finish the core flow before details: 이직, 이직확인서, 실업의 신고, 수급자격 인정, 실업의 인정 and 지급 for 근로자, with 취업촉진 수당 and 연장급여.
+  - Complete it to verified notes and resolved questions before drafting deferred matters or rare cases of special groups.
 
 ### Competency questions
 

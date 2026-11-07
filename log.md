@@ -1806,3 +1806,9 @@
 - 대상: 피보험자격 관리 조문 (고용보험법 제10조, 제10조의2, 제13조, 제17조와 시행령·시행규칙 제1장·제2장)
 - 추가: 적용 제외 대상과 외국인 적용 구분 ConceptScheme 2개, Concept 11개, 취득·전근·변경 신고와 확인 등 PublicService 10개, Channel 1개, Participation 3개, Constraint 5개, Criterion 1개, InformationConcept 14개, EvidenceType 13개, 법령 노트 59개
 - 내용: 새 노트는 모두 draft다. 법령 노트 생성의 새 REVIEW는 고용보험법 시행규칙 제6조가 인용하는 영 제3조의2제2항을 시행규칙의 조로 읽은 1건이다. 기존 노트 6개에 넣을 링크는 아직 반영하지 않았다.
+
+## 2026-11-07 21:47 schema
+
+- 대상: 구축 범위
+- 수정: CLAUDE.md, scripts/coverage.py, scripts/sources.yaml, docs/roadmap.md, docs/decisions.md, TODO.md
+- 내용: 사용자 판단 core-first에 따라 심사 및 재심사청구, 보칙과 벌칙, 둘 이상의 피보험자격을 가진 사람의 특례, 예술인·노무제공자의 피보험자 범위와 피보험자격 신고를 `defer`로 미뤘다. 핵심 범위는 171개 조문 가운데 169개를 인용하고, 미룬 조문 86개는 coverage.py가 사유별로 보인다.

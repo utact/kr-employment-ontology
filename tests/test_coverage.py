@@ -37,20 +37,37 @@ DELEGATIONS = {
 
 
 def test_scope_takes_chapters_articles_and_delegations_down_the_family():
-    chosen, _ = C.scope(statutes(DELEGATIONS), {"시험법": {"units": ["제2조", "제2장"]}})
+    chosen, _, _ = C.scope(statutes(DELEGATIONS), {"시험법": {"units": ["제2조", "제2장"]}})
     assert chosen == {("시험법", "art-2"), ("시험법", "art-10"), ("시험법", "art-11"),
                       ("시험법 시행령", "art-5"), ("시험법 시행령", "art-6"), ("시험법 시행규칙", "art-7")}
 
 
 def test_left_out_article_does_not_bring_its_delegations():
     config = {"시험법": {"units": ["제2장"], "exclude": {"제11조": "다른 급여"}}}
-    chosen, left_out = C.scope(statutes(DELEGATIONS), config)
+    chosen, left_out, _ = C.scope(statutes(DELEGATIONS), config)
     assert ("시험법", "art-11") not in chosen and ("시험법 시행령", "art-6") not in chosen
     assert left_out == {("시험법", "art-11"): "다른 급여"}
 
 
+def test_deferred_chapter_leaves_the_count_with_its_delegations_and_is_listed(tmp_path):
+    config = {"시험법": {"units": ["제1장", "제2장"], "defer": {"제2장": "급여"}}}
+    chosen, _, deferred = C.scope(statutes(DELEGATIONS), config)
+    assert chosen == {("시험법", "art-2"), ("시험법", "art-3")}
+    assert deferred == {("시험법", "art-10"): "급여", ("시험법", "art-11"): "급여", ("시험법 시행령", "art-5"): "급여",
+                        ("시험법 시행령", "art-6"): "급여", ("시험법 시행규칙", "art-7"): "급여"}
+    config["시험법"]["exclude"] = {"제11조": "다른 급여"}
+    _, left_out, deferred = C.scope(statutes(DELEGATIONS), config)
+    assert ("시험법", "art-11") in left_out and ("시험법", "art-11") not in deferred
+    assert ("시험법 시행령", "art-6") not in deferred
+    del config["시험법"]["exclude"]
+    (tmp_path / "Rule").mkdir()
+    (tmp_path / "Rule" / "급여 산정.md").write_text("[[시험법 제10조]]\n", encoding="utf-8")
+    lines = C.report(statutes(DELEGATIONS), config, tmp_path)
+    assert lines[lines.index("deferred:") + 1:lines.index("deferred:") + 3] == ["  급여: 1/5", "    - 시험법 제11조"]
+
+
 def test_deleted_article_is_not_in_scope():
-    chosen, _ = C.scope(statutes({}), {"시험법": {"units": ["제2장"]}})
+    chosen, _, _ = C.scope(statutes({}), {"시험법": {"units": ["제2장"]}})
     assert ("시험법", "art-12") not in chosen
 
 

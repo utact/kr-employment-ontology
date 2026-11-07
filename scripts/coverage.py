@@ -2,6 +2,8 @@
 
 The scope is `coverage` in scripts/sources.yaml: the chapters and articles of each law, and the articles left out with a reason.
 It also takes in every article of a lower law that receives a delegation from an article in scope, by the 위임조문 data of 법제처.
+Chapters and articles under `defer` stay out of the count until a later phase, and so do the articles they delegate to.
+The report lists them by reason, with those that no note cites yet.
 An article counts as covered when a wiki note other than a statute note links to it or to one of its blocks.
 """
 
@@ -34,36 +36,49 @@ def articles(law):
             if kind == "article" and not (not row.get("조문제목") and DELETED.match(row.get("조문내용", "")))]
 
 
+def units_of(law, labels):
+    """Keys of the articles that the labels name, directly or through a 장 that holds them."""
+    keys = {key_of(label) for label in labels}
+    return [key for key in articles(law) if key in keys or any(unit.key in keys for unit in S.Unit(law, key).ancestors())]
+
+
+def delegated(statutes, found, skip):
+    """Articles of lower laws that receive a delegation from an article in found, as {(law, key): upper}, without those in skip."""
+    taken = {}
+    for (lower, key), uppers in statutes.delegations.items():
+        if (lower, key) in found or (lower, key) in skip or lower not in statutes.laws:
+            continue
+        if key not in articles(statutes.laws[lower]):
+            continue
+        for upper, provision in uppers:
+            try:
+                upper_key = S.provision_block(provision)[0]
+            except ValueError:
+                continue
+            if (upper, upper_key) in found:
+                taken[lower, key] = (upper, upper_key)
+                break
+    return taken
+
+
 def scope(statutes, config):
-    """Articles in scope as a set of (law, key), and the articles left out as {(law, key): reason}."""
-    chosen, left_out = set(), {}
+    """Articles in scope as a set of (law, key), the articles left out as {(law, key): reason}, and the deferred ones as {(law, key): reason}."""
+    chosen, left_out, deferred = set(), {}, {}
     for name, entry in config.items():
         law = statutes.laws[name]
-        keys = {key_of(label) for label in entry.get("units", [])}
         for label, reason in (entry.get("exclude") or {}).items():
             left_out[name, key_of(label)] = reason
-        for key in articles(law):
-            if key in keys or any(unit.key in keys for unit in S.Unit(law, key).ancestors()):
-                chosen.add((name, key))
-    chosen -= set(left_out)
-    changed = True
-    while changed:
-        changed = False
-        for (lower, key), uppers in statutes.delegations.items():
-            if (lower, key) in chosen or (lower, key) in left_out or lower not in statutes.laws:
-                continue
-            if key not in articles(statutes.laws[lower]):
-                continue
-            for upper, provision in uppers:
-                try:
-                    upper_key = S.provision_block(provision)[0]
-                except ValueError:
-                    continue
-                if (upper, upper_key) in chosen:
-                    chosen.add((lower, key))
-                    changed = True
-                    break
-    return chosen, left_out
+        for label, reason in (entry.get("defer") or {}).items():
+            for key in units_of(law, [label]):
+                if (name, key) not in left_out:
+                    deferred[name, key] = reason
+        chosen.update((name, key) for key in units_of(law, entry.get("units", [])))
+    chosen -= set(left_out) | set(deferred)
+    while taken := delegated(statutes, chosen, set(left_out) | set(deferred)):
+        chosen.update(taken)
+    while taken := delegated(statutes, deferred, chosen | set(left_out)):
+        deferred.update({lower: deferred[upper] for lower, upper in taken.items()})
+    return chosen, left_out, deferred
 
 
 def citations(statutes, wiki):
@@ -87,7 +102,7 @@ def chapter(law, key):
 
 def report(statutes, config, wiki, every=False):
     """Lines that count the cited articles in scope by law and 장, and list the others."""
-    chosen, left_out = scope(statutes, config)
+    chosen, left_out, deferred = scope(statutes, config)
     cited = citations(statutes, wiki)
     lines, total, covered = [], 0, 0
     for name in config:
@@ -108,6 +123,17 @@ def report(statutes, config, wiki, every=False):
                     mark = "o" if (name, key) in cited else "-"
                     lines.append(f"    {mark} {unit.number}" + (f" {unit.title}" if unit.title != unit.number else ""))
     lines.append(f"total: {covered}/{total}")
+    if deferred:
+        lines.append("deferred:")
+        groups = {}
+        for (name, key), reason in deferred.items():
+            groups.setdefault(reason, []).append((name, key))
+        for reason, group in groups.items():
+            lines.append(f"  {reason}: {sum(1 for unit in group if unit in cited)}/{len(group)}")
+            for name, key in group:
+                if every or (name, key) not in cited:
+                    mark = "o" if (name, key) in cited else "-"
+                    lines.append(f"    {mark} {S.Unit(statutes.laws[name], key).name}")
     if left_out:
         lines.append("left out:")
         for (name, key), reason in left_out.items():
