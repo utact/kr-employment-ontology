@@ -89,6 +89,12 @@ def test_continued_paragraphs_belong_to_the_law_before_them():
     assert found == [("시험법", "art-11", "p2"), ("시험법", "art-11", "p3")]
 
 
+def test_reference_after_a_part_and_a_conjunction_belongs_to_the_law_before_it():
+    statutes = family([article(5, "범위", [("법 제12조제1항 단서ㆍ제13조제1항에 따라 신고한다.", [])])])
+    found = [(r.law, r.key, r.block) for r in refs(statutes, "시험법 시행령", "art-5")]
+    assert found == [("시험법", "art-12", "p1"), ("시험법", "art-13", "p1")]
+
+
 def test_range_cites_every_article_in_it():
     statutes = family([article(5, "범위", [("법 제56조부터 제58조까지의 규정에 따른다.", [])])])
     assert {r.key for r in refs(statutes, "시험법 시행령", "art-5")} == {"art-56", "art-57", "art-58"}

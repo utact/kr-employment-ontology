@@ -48,7 +48,7 @@ REFERENCE = re.compile(
     r"|(?P<part_m>[가나다라마바사아자차카타파하])목(?!적|록)"
     r")"
 )
-CONTINUATION = re.compile(r"\s*(?:부터|까지|ㆍ|·|,|및|와|과|또는)?\s*")
+CONTINUATION = re.compile(r"\s*(?:(?:본문|단서|전단|후단|각\s*호\s*외의\s*부분)?\s*(?:부터|까지|ㆍ|·|,|및|와|과|또는))?\s*")
 QUALIFIER = re.compile(r"\s*(?:본문|단서|전단|후단)?\s*\(\s*")
 QUOTE_LEAD = re.compile(r"\s*(?:본문|단서|전단|후단|각\s*호\s*외의\s*부분)?\s*에서\s*$")
 RANGE_START = re.compile(r"\s*부터\s*")
