@@ -73,7 +73,7 @@ The vault has three layers: raw sources that are never edited, the wiki that the
 - Collect the 판례 of 대법원 listed under `precedents` in `scripts/sources.yaml` with `scripts/collect.py precedents`.
   - List one when it interprets a provision that the wiki states or a question callout asks about, such as 대법원 2015두44165 on 고용된 경우 in 고용보험법 시행령 제84조제1항제1호.
   - Quote its 판시사항, 판결요지 or 판례내용 with `scripts/collect.py quote "판례 <사건번호>" <section> "<text>"`.
-  - A 판례 often interprets an earlier version, as 2015두44165 does the 시행령 before 2014-01-01. Cite it for the current version only when the interpreted text is the same, and name both versions in the note.
+  - A 판례 often interprets an earlier version, as 2015두44165 does the 시행령 before 2014-01-01. Cite it for the current version only when the words it interprets are unchanged there, as 계속하여 고용된 경우, and quote both texts in the note.
 - Collect the 위임조문 data of the current version of every 법률 and 시행령 in scope.
   - It names each provision that delegates to a 시행령 or 시행규칙 and the article that receives it.
   - 법제처 keeps it for its 현행 version only, so collect it again when a new version comes into force. `scripts/collect.py` stores no response of another version, and `scripts/check_raw.py` fails when the current version lacks it.
