@@ -493,7 +493,8 @@ Lint compares each number with the cited blocks, not the claim it makes. A sente
   - They stay out of the count, together with the articles they delegate to.
   - The report lists them by reason, with those that no note cites yet, so that they can be taken up later.
 - Finish the core flow before details: 이직, 이직확인서, 실업의 신고, 수급자격 인정, 실업의 인정 and 지급 for 근로자, with 취업촉진 수당 and 연장급여.
-  - Complete it to verified notes and resolved questions before drafting deferred matters or rare cases of special groups.
+  - Complete it to verified notes before drafting deferred matters or rare cases of special groups.
+  - Settle each question that a source settles. Leave the others open in their callouts, rare cases included, as the human owner decided in `docs/decisions.md`; they do not hold up the core flow.
 
 ### Competency questions
 
