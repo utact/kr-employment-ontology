@@ -136,6 +136,8 @@ def test_streaming_progress_discards_reasoning_and_keeps_validation(monkeypatch)
     reply = json.dumps({"cap": 68100, "evidenceIds": ["current"], "explanation": "하루 상한액은 68,100원입니다."})
     def opener(request, timeout):
         assert json.loads(request.data)["stream"] is True
+        prompt = json.loads(json.loads(request.data)["messages"][1]["content"])
+        assert states[0]["evidenceIds"] == list(prompt["evidence"])
         chunks = [{"delta": {"reasoning_content": "private-reasoning"}},
                   {"delta": {"reasoning_content": "more-private-reasoning"}},
                   {"delta": {"content": reply[:20]}}, {"delta": {"content": reply[20:]}},
@@ -146,6 +148,7 @@ def test_streaming_progress_discards_reasoning_and_keeps_validation(monkeypatch)
     states = []
     result = M.explain("2026-09-30", opener, on_progress=states.append)
     assert [s["phase"] for s in states] == ["requesting", "reasoning", "writing", "validating"]
+    assert states[0]["evidenceIds"] == ["current", "rate", "transition", "effective"]
     assert "private-reasoning" not in json.dumps([states, result])
     assert result["cap"] == 68100
 

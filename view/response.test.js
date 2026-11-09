@@ -24,3 +24,12 @@ test('중단되거나 검증에 실패한 응답을 완료로 표시하지 않�
   await assert.rejects(readModelResponse(streamResponse([{type:'status',phase:'reasoning'}]),()=>{}),/완료되지/);
   await assert.rejects(readModelResponse(streamResponse([{type:'error',error:'금액 불일치'}]),()=>{}),/금액 불일치/);
 });
+
+test('근거 표시는 서버가 보낸 입력 근거 식별자를 그대로 받는다',async()=>{
+  const states=[];
+  await readModelResponse(streamResponse([
+    {type:'status',phase:'requesting',evidenceIds:['previous','rate']},
+    {type:'result',cap:66000}
+  ]),(label,state)=>states.push(state));
+  assert.deepEqual(states[0].evidenceIds,['previous','rate']);
+});

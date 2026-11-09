@@ -9,7 +9,7 @@ export async function readModelResponse(response,onStatus) {
     if(!line.trim())return;
     const event=JSON.parse(line);
     if(event.type==='error')throw new Error(event.error);
-    if(event.type==='status'&&phaseLabels[event.phase])onStatus(phaseLabels[event.phase]);
+    if(event.type==='status'&&phaseLabels[event.phase])onStatus(phaseLabels[event.phase],event);
     if(event.type==='result')result=event;
   };
   try{

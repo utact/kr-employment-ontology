@@ -4,11 +4,12 @@ import {setupPanelResize} from './layout.js';
 import {STEP_INTERVAL_MS,capturedFrameIndex,setupSpeedControl} from './playback.js';
 import {readModelResponse} from './response.js';
 import {startup} from './startup.js';
+import {EvidenceFlow} from './evidence-flow.js';
 
 const $ = selector => document.querySelector(selector);
 const fmt = n => n.toLocaleString('ko-KR');
 const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-let data, baselines, graph, execution=null, step=-1, timer=null, playing=false;
+let data, baselines, graph, evidenceFlow, execution=null, step=-1, timer=null, playing=false;
 let baselineTimer=null, baselineDone=false, modelPending=false, playbackSpeed=1;
 const delay = () => STEP_INTERVAL_MS / playbackSpeed;
 const showError = message => {$('#error-notice').textContent=message;$('#error-notice').hidden=!message;};
@@ -41,6 +42,7 @@ function showStep(index) {
   $('#step-counter').textContent=`${step+1}단계`;
   document.querySelectorAll('#step-track button').forEach((b,i)=>{b.classList.toggle('done',i<step);b.classList.toggle('current',i===step);b.setAttribute('aria-current',i===step?'step':'false');});
   graph.frame(execution.events,step);
+  evidenceFlow?.focus(event);
   $('#graph-context').hidden=false;$('#graph-mode').textContent=event.title;$('#graph-detail').textContent=event.detail;
   $('#next-step').disabled=step===execution.events.length-1;
   if(step===execution.events.length-1)pause();
@@ -126,10 +128,13 @@ async function requestAnswer(run) {
   if(modelPending)return;
   modelPending=true;$('#run-button').disabled=true;$('#separation-date').disabled=true;$('#thinking-message').hidden=false;$('#answer-content').hidden=true;
   $('#answer-summary').hidden=true;
+  evidenceFlow.begin();
   $('#model-time').textContent='생성 중';$('#thinking-status').textContent='답변 요청 중';
   try{
     const response=await fetch('./api/explain',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/x-ndjson'},body:JSON.stringify({separationDate:run.separationDate})});
-    const result=await readModelResponse(response,label=>{if(execution===run)$('#thinking-status').textContent=label;});
+    const result=await readModelResponse(response,(label,state)=>{
+      if(execution===run){$('#thinking-status').textContent=label;evidenceFlow.status(state);}
+    });
     if(execution!==run)return;
     run.modelResponse=result;run.llmUsed=true;
     const refs=result.evidenceIds;
@@ -139,6 +144,7 @@ async function requestAnswer(run) {
   }catch(e){
     if(execution===run){$('#answer-content').innerHTML=`<p class="model-error">${escape(e.message)}</p><button class="small-button" id="retry-model">다시 시도</button>`;$('#model-time').textContent='요청 실패';$('#retry-model').addEventListener('click',()=>requestAnswer(run));}
   }finally{
+    evidenceFlow.finish();
     modelPending=false;$('#run-button').disabled=false;$('#separation-date').disabled=false;
     if(execution===run){$('#thinking-message').hidden=true;$('#answer-content').hidden=false;}
   }
@@ -181,6 +187,7 @@ async function init() {
     document.querySelectorAll('[data-about-date]').forEach(el=>{el.textContent=data.meta.asOf.replaceAll('-','.');el.dateTime=data.meta.asOf;});
     $('#graph-count').textContent=`노드 ${fmt(data.meta.nodeCount)} · 관계 ${fmt(data.meta.relationCount)}`;
     graph=new VaultGraph($('#graph-canvas'),data,showNode);$('#graph-loading').hidden=true;
+    evidenceFlow=new EvidenceFlow(graph,data.evidence,$('#thinking-message'));
     setupPanelResize($('#workspace'));
     resetStepTrack();
     setupSpeedControl($('#playback-speed'),$('#speed-options'),speed=>{playbackSpeed=speed;if(playing)schedule();});

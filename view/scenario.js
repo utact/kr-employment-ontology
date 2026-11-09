@@ -45,7 +45,7 @@ export function runScenario(data, separationDate, clock = () => performance.now(
     [s.cap, s.rate, s.rule, s.result], [selectedEvidence, 'rate'],
     {operation: 'multiply', inputs: {baseCap, rate: config.rate}, result: cap});
   record('답변 근거', '상한액 · 지급 비율 · 경과조치',
-    [s.result, s.rule], [selectedEvidence, 'rate', 'transition'],
+    [s.cap, s.rate, s.transition, s.result, s.rule], [selectedEvidence, 'rate', 'transition', 'effective'],
     {operation: 'evidence-selection', cap});
   const durationMs = +(clock() - started).toFixed(3);
   return {scenarioId: config.id, separationDate, current, baseCap, rate: config.rate, cap,

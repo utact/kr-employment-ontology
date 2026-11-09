@@ -158,15 +158,15 @@ def explain(separation_date, opener=urllib.request.urlopen, on_progress=None):
     start = time.perf_counter()
     phases = []
 
-    def progress(phase):
+    def progress(phase, **details):
         if phases and phases[-1]["phase"] == phase:
             return
-        state = {"phase": phase, "elapsedMs": round((time.perf_counter() - start) * 1000, 1)}
+        state = {"phase": phase, "elapsedMs": round((time.perf_counter() - start) * 1000, 1), **details}
         phases.append(state)
         if on_progress:
             on_progress(state)
 
-    progress("requesting")
+    progress("requesting", evidenceIds=facts["evidenceIds"])
     try:
         with opener(request, timeout=150) as response:
             if response.status != 200:

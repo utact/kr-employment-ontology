@@ -102,7 +102,23 @@
           <div id="conversation" hidden>
             <p id="question-text" class="user-question"></p>
             <div class="assistant-label"><img src="./assets/brand-mark.svg" alt=""><b>이직·실업급여</b></div>
-            <div id="thinking-message" class="thinking-message" role="status"><span class="loader"></span><span id="thinking-status">답변 요청 중</span></div>
+            <div id="thinking-message" class="thinking-message" role="status">
+              <span class="thinking-port" aria-hidden="true">
+                <svg viewBox="0 0 28 28">
+                  <g class="thinking-network">
+                    <path class="thinking-link" d="M14 6 5 22h18Z"/>
+                    <path class="thinking-signal" d="M14 6 5 22h18Z" pathLength="100"/>
+                    <circle class="thinking-node" cx="14" cy="6" r="2.6"/>
+                    <circle class="thinking-node" cx="5" cy="22" r="2"/>
+                    <circle class="thinking-node" cx="23" cy="22" r="2"/>
+                  </g>
+                  <circle class="thinking-wave" cx="14" cy="14" r="5"/>
+                  <circle class="thinking-review" cx="14" cy="14" r="8"/>
+                  <circle class="thinking-core" cx="14" cy="14" r="2.6"/>
+                </svg>
+              </span>
+              <span id="thinking-status">답변 요청 중</span>
+            </div>
             <div id="answer-content" hidden></div>
           </div>
         </div>
