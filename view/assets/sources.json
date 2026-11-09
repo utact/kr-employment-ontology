@@ -1,0 +1,36 @@
+{
+  "capturedAt": "2026-11-09",
+  "sourcePage": "https://ai.moel.go.kr/llc/labor-law-chat",
+  "assets": [
+    {
+      "file": "moel-logo.png",
+      "url": "https://ai.moel.go.kr/img/logo-moelChat.png",
+      "use": "Captured service header"
+    },
+    {
+      "file": "moel-bot.png",
+      "url": "https://ai.moel.go.kr/img/chatbot-front.png",
+      "use": "Captured service assistant icon"
+    },
+    {
+      "file": "brand-mark.svg",
+      "source": "WorldPop Global2 R2025A v1, 2020 population estimates, KOR and PRK",
+      "attribution": "WorldPop, University of Southampton; Bondarenko et al. (2025)",
+      "url": "https://doi.org/10.5258/SOTON/WP00840",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "modifications": "1km estimates aggregated to 20km bins; log-scaled node size and brightness; simplified mark with decorative edges",
+      "data": "brand-population.json",
+      "generator": "../../scripts/build_brand.py"
+    },
+    {
+      "file": "intro-geometry.json",
+      "source": "Natural Earth 1:110m land; WorldPop brand population aggregation",
+      "url": "https://www.naturalearthdata.com/about/terms-of-use/",
+      "license": "Natural Earth: public domain; WorldPop-derived Korea: CC BY 4.0",
+      "attribution": "Natural Earth; WorldPop, University of Southampton; Bondarenko et al. (2025)",
+      "modifications": "Land sampled as globe nodes; Korea reuses brand population nodes and simplified coastlines. World node brightness is decorative.",
+      "generator": "../../scripts/build_intro.py"
+    }
+  ]
+}

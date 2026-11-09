@@ -64,7 +64,10 @@ def env():
 def secrets():
     """Strings that must never be stored: API keys, and the 법제처 OC as a parameter."""
     values = env()
-    found = [v for k, v in values.items() if k != "LAW_OC" and len(v) >= 8]
+    public_settings = {"LLM_PROVIDER", "NVIDIA_MODEL", "NVIDIA_THINKING",
+                       "GEMINI_MODEL", "GEMINI_THINKING_LEVEL"}
+    found = [v for k, v in values.items()
+             if k != "LAW_OC" and k not in public_settings and len(v) >= 8]
     if values.get("LAW_OC"):
         found.append(f"OC={values['LAW_OC']}")
     return found

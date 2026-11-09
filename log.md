@@ -1883,3 +1883,64 @@
 
 - 대상: 로드맵 6단계 완료 조건
 - 내용: 핵심 범위 171개 조문 인용, 역량 질문 24개와 시나리오 통과, lint 0건, 법령 노트 생성 검토 목록 처리를 다시 확인했다. 출처로 풀리는 질문은 풀었고, 원문과 저장한 고용24 안내로 닫히지 않는 질문은 판단 기록 open-questions에 따라 남겼다. 6단계 완료 조건을 모두 충족한다.
+
+## 2026-11-09 11:20 schema
+
+- 대상: 로컬 비교 viewer
+- 추가: `view/`, `scripts/export_view.py`, `tests/test_view.py`
+- 수정: `.env.example`, `TODO.md`
+- 내용: vault의 실제 노드 1,371개와 관계 7,898개를 내보내고 `/view/`에 표시했다. AI 노동법 상담에 같은 질문을 새 대화로 보내 응답 원문과 캡처를 저장했다. 2026-09-30과 2025-12-31 이직 모두 서비스는 66,000원을 답했다. WIKI는 날짜 조건·법령 버전·상한액 계산 결과를 NVIDIA Nemotron 3 Ultra에 전달하며 실제 호출로 각각 68,100원과 66,000원을 확인했다. 키는 서버에서만 읽는다. 그래프는 고정 좌표에서 호버 연결 강조, 노드에 붙는 설명창, 단계별 카메라 이동과 간선 재생을 제공한다. 원본 노트와 법령은 수정하지 않았다. 원문 일치 확인과 Python 16개·JavaScript 8개 검사 통과. 브라우저에서 실제 응답, 노드 선택, 설명창 경계, 그래프 확대를 확인했다. 재생 시간으로 서비스 속도를 비교하지 않는다.
+
+## 2026-11-09 11:31 schema
+
+- 대상: viewer 아이콘과 이름 표기
+- 추가: `view/assets/brand-mark.svg`
+- 수정: `view/index.html`, `view/styles.css`, `view/app.js`, `view/README.md`, `view/assets/sources.json`
+- 삭제: `view/assets/wiki-mark.svg`
+- 내용: 한반도 심벌을 작은 노드 242개와 짧은 연결선으로 바꾸고 크기·밝기의 차이로 명암을 주었다. 화면 이름은 고용 분야에서 적용 규정과 근거를 확인하는 취지를 담아 ‘일의 기준’으로 바꿨다. 구직급여 상한액은 예제 01로 옮기고 상단의 제품 범위와 분리했다. 중복 제목과 빈 답변 영역의 안내 문장을 줄였다. 브라우저에서 아이콘과 상단 표기를 확인했고 SVG와 로컬 자산 참조를 검사했다.
+
+## 2026-11-09 13:10 schema
+
+- 대상: 인구 밀도에 따른 viewer 심벌
+- 추가: `scripts/build_brand.py`, `view/assets/brand-population.json`
+- 수정: `view/assets/brand-mark.svg`, `view/assets/sources.json`, `view/index.html`, `view/README.md`
+- 내용: 사용자가 인구 분포 방향을 선택했다. WorldPop Global2 R2025A v1의 남북한 2020년 1km 인구 추정치와 경계를 수집하고, 20km 구간의 육지 면적당 인구를 집계해 노드 크기·밝기에 반영했다. 거주지 밖의 누락값도 경계상 육지이면 분모에 포함하며, 밝기는 로그 변환 후 5,000명/km²에서 포화한다. 노드 733개와 출처 URL·hash·CC BY 4.0·변환 방식을 저장했다. 지도 윤곽도 실제 경계로 바꿨다. SVG 재생성 일치, 값 범위와 합계, 브라우저 표시를 확인했다.
+
+## 2026-11-09 13:13 schema
+
+- 대상: 심벌의 명암 격차와 viewer 이름
+- 수정: `scripts/build_brand.py`, `view/assets/brand-mark.svg`, `view/assets/brand-population.json`, `view/index.html`, `view/app.js`, `view/README.md`
+- 내용: 인구 밀도 값과 순서는 유지하고 노드 반지름을 0.50~0.90, 불투명도를 0.58~0.82로 좁혔다. 색과 간선의 대비도 줄였다. 사용자가 서비스명 ‘일의 기준’을 거절해 화면에는 임시 설명명 ‘고용 온톨로지’를 사용한다. 범위는 고용24가 다루는 고용서비스의 대상·조건·절차·법령 근거를 연결한 한국 고용 분야 온톨로지로 정리했다. SVG의 반지름과 불투명도 범위를 확인했다.
+
+## 2026-11-09 13:29 schema
+
+- 대상: viewer 소개와 이름
+- 수정: `view/index.html`, `view/styles.css`, `view/app.js`, `view/README.md`, `scripts/build_brand.py`, `view/assets/brand-mark.svg`, `TODO.md`
+- 내용: 이름을 고용근거로 정하고 이직·실업급여 법령 온톨로지라는 범위를 표시했다. 앞선 소개의 고용서비스 전반이라는 표현을 바로잡았다. 소개·구축 현황·예제 탭에 법령 중심 출처, 755개 지식 노트와 616개 원문 노트, 대상 조문 171/171 인용과 역량 질문 24개 통과의 확인 날짜와 의미를 적었다. 일부 구축한 자영업자·예술인·노무제공자 급여, 남은 세부 범위, 미해결 질문을 구분했다. draft는 수집 예정이 아니라 원문 대조 전 상태이며 실제 해당 노트가 있을 때만 수를 표시한다. 노트 수와 법령 기준일도 그래프 데이터에서 읽는다. 브라우저에서 세 탭, 방향키·End 전환, Escape 닫기와 초점 복귀, 모달 내 내용 표시를 확인했다. JavaScript 문법과 HTML 접근성 참조, diff 검사를 통과했다.
+
+## 2026-11-09 14:03 schema
+
+- 대상: viewer 소개 문구, 패널 너비와 그래프 탐색
+- 추가: `view/layout.js`, `view/interaction.test.js`
+- 수정: `view/index.html`, `view/styles.css`, `view/app.js`, `view/graph.js`, `view/README.md`, `scripts/build_brand.py`, `view/assets/brand-mark.svg`, `TODO.md`
+- 내용: 이름을 이직·실업급여 온톨로지로 바꿨다. 소개에 공식 출처 링크를 추가하고, 버전은 현재 제공과 제공 예정으로 나눴다. 개조식 표현과 구분선을 통일하고 응답 재생 표기를 삭제했다. 저장된 실제 상담 응답이라는 설명은 예제 정보에 유지했다. 답변 패널에 드래그·키보드 너비 조절과 비율 저장을 추가했다. 그래프 이동·축소 범위를 제한하고, 확대할 때 겹치지 않는 노드 이름을 표시했다. 고용노동부 시행령 개정 안내와 1350 상담 답변으로 2026년 이직자의 상한액 68,100원과 2025년 말까지 이직자의 66,000원을 교차 확인했다. 현재 예제의 상한액·적용 날짜에 한정한 검증이며 전체 상담 정확도나 다국어 품질 평가가 아니다. Python 16개와 JavaScript 15개 검사를 통과했다. 브라우저에서 패널 조절·최소 너비·설정 유지·확대 라벨·네 소개 탭·좁은 화면 배치를 확인했고 오류 로그는 없었다. 법령과 wiki 원문은 수정하지 않았다.
+
+## 2026-11-09 14:32 schema
+
+- 대상: viewer 응답 실측과 진행 표시
+- 추가: `view/playback.js`, `view/response.js`, `view/response.test.js`, `scripts/build_baseline.py`, `view/data/captures/moel-2026-timed.*`, `view/data/captures/moel-2025-timed.*`
+- 수정: `view/index.html`, `view/styles.css`, `view/app.js`, `view/model.py`, `view/serve.py`, `view/data/baseline-responses.json`, `view/interaction.test.js`, `tests/test_view.py`, `view/README.md`, `TODO.md`
+- 내용: AI 노동법 상담에 날짜별 같은 질문을 새 대화로 보내 원문과 표시 시점을 함께 수집했다. 2026년 질문은 첫 글자 1.815초·마지막 글자 3.605초, 2025년 질문은 1.543초·3.886초였다. 질문별 1회 화면 관측이며 캐시 사용 여부와 서버 처리 시간은 알 수 없다. 이전 미측정 응답을 보존하고 실측 시점에 맞춰 표시하도록 바꿨다. 탐색 간격은 1,100ms로 늘리고 도달한 단계마다 구간이 320ms 동안 나뉘게 했다. 기록은 미리 계산되므로 실시간으로 생성되는 모델 추론으로 표시하지 않는다. NVIDIA 스트림의 실제 추론·답변 신호와 검증 시작에 따라 상태를 표시하고 추론 원문은 버린다. 배속 메뉴와 검색창을 정리하고 응답 전에는 빈 결과 영역을 접었다. 응답 완료 뒤에만 상한액·시간·기록을 표시한다. 자유질문은 현재 미지원이며 별도 근거 검색과 탐색 기록 생성이 필요하다는 범위를 안내에 적었다. Python 20개·JavaScript 18개 검사와 브라우저에서 단계 분할, 좁은 패널, 실제 호출의 상태 전환, 결과 영역 표시를 확인했다. 실제 NVIDIA 호출은 각각 17.5초와 12.0초에 완료됐다. 법령과 wiki 원문은 수정하지 않았다.
+
+## 2026-11-09 14:46 schema
+
+- 대상: viewer 시작 화면 모션
+- 추가: `view/startup.js`, `view/startup-timing.js`, `view/startup.test.js`, `view/assets/intro-geometry.json`, `scripts/build_intro.py`
+- 수정: `view/index.html`, `view/styles.css`, `view/app.js`, `view/assets/sources.json`, `view/README.md`, `TODO.md`
+- 내용: Natural Earth의 실제 대륙을 1,739개 노드로 표현한 지구본에서 기존 WorldPop 기반 한반도 노드 733개로 확대되는 시작 화면을 추가했다. 지도 윤곽을 두 번 강조한 뒤 준비된 화면을 함께 표시한다. 기본 연출과 전환은 약 2.4초이며 데이터·주요 이미지·글꼴·그래프 첫 그리기를 기다린다. 같은 탭의 재방문은 짧은 전환을 사용하고, 건너뛰기·Escape·동작 줄이기를 지원한다. 초기화 실패와 지연으로 진입이 영구 차단되지 않도록 해제 경로를 추가했다. 지도 좌표는 로컬 파일로 제공하고 출처·이용 조건·생성 방법을 기록했다. JavaScript 21개·Python 20개 검사와 HTML 참조·좌표 연결 검사를 통과했다. 1280×720과 390×844 화면에서 회전·확대·윤곽·화면 전환을 확인했고, 건너뛰기 뒤 입력 가능 상태와 초점 복귀, 오류 로그가 없음을 확인했다.
+
+## 2026-11-09 15:10 schema
+
+- 대상: viewer 변경의 main 반영 준비
+- 수정: `scripts/lawlib.py`, `tests/test_lawlib.py`, `view/package.json`, `view/README.md`
+- 내용: 공개 모델 이름을 비밀값으로 오인하던 검사를 수정했다. 명시된 공급자·모델·추론 설정만 제외하고 API 키, 알려지지 않은 자격 정보와 법제처 OC 매개변수 검사는 유지한다. 회귀 검사로 이를 확인했다. npm test가 viewer의 모든 JavaScript 검사를 실행하도록 정리했다. Python 79개·JavaScript 21개 검사, 볼트와 웹 데이터 일치, 문서 형식과 staged 비밀값 검사를 통과했다. 사용자가 main 커밋과 푸시를 요청했다. 저장소 이름과 공개 여부 변경은 아직 결정하지 않았다.
