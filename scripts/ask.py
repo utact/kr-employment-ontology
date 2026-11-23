@@ -145,7 +145,13 @@ class Note:
 class Index:
     def __init__(self, root=ROOT):
         notes = (Note(p) for p in sorted((root / "wiki").rglob("*.md")))
-        self.notes = {note.name: note for note in notes if note.meta.get("status") == "verified"}
+        self.notes = {note.name: note for note in notes if note.meta.get("status") in {"verified", "reviewed"}}
+        targets = {target for note in self.notes.values() for target, anchor in note.sources
+                   if anchor and re.fullmatch(r"q[1-9]\d*", anchor)}
+        self.quotations = {}
+        for path in (root / "raw").rglob("*.md"):
+            if path.stem in targets:
+                self.quotations.update(raw_quotations(path))
         self.docs = {name: Counter(grams(note.card())) for name, note in self.notes.items()}
         self.lengths = {name: sum(c.values()) for name, c in self.docs.items()}
         self.average = sum(self.lengths.values()) / len(self.lengths)
@@ -273,9 +279,14 @@ class Index:
         for name in chosen:
             first = True
             for target, anchor in self.notes[name].sources:
-                if not anchor or target not in self.notes:
+                if not anchor:
                     continue
-                block = self.block(self.notes[target], anchor, day, cited_by=name)
+                if target in self.notes:
+                    block = self.block(self.notes[target], anchor, day, cited_by=name)
+                elif (target, anchor) in self.quotations:
+                    block = {**self.quotations[target, anchor], "citedBy": name}
+                else:
+                    continue
                 key = target, block["block"]
                 if not block["text"]:
                     continue
@@ -347,6 +358,33 @@ ANSWER_SYSTEM = (
 )
 
 
+def raw_quotations(path):
+    """Load declared, hashed quotations without making raw documents retrieval seeds."""
+    from lawlib import body_hash
+
+    meta, body = read_note(path)
+    blocks = block_texts(body)
+    label = path.stem.rsplit(" ", 1)[0]
+    if meta["identifier"].startswith("raw-work24-"):
+        label = "고용24 " + label
+    available = meta.get("modified") or meta["generatedAtTime"][:10]
+    if path.parent.name in {"판례", "법령해석례"}:
+        service, field = ("PrecService", "선고일자") if path.parent.name == "판례" else ("ExpcService", "해석일자")
+        response = path.with_suffix(".json")
+        if response.is_file():
+            available = json.loads(response.read_text(encoding="utf-8"))[service].get(field) or available
+    quotes = {}
+    for number, part in enumerate(meta.get("hasPart") or [], 1):
+        anchor = f"q{number}"
+        text = part["text"]
+        if (part.get("identifier") != f"{meta['identifier']}-{anchor}" or blocks.get(anchor) != text
+                or part.get("sha256") != body_hash(text)):
+            raise ValueError(f"Invalid quotation: {path.name}#^{anchor}")
+        quotes[path.stem, anchor] = {"note": path.stem, "block": anchor, "text": text, "quotation": label,
+                                     "sourceUrl": meta["url"], "availableFrom": date.fromisoformat(available).isoformat()}
+    return quotes
+
+
 def context(index, retrieval, facts=None, note_chars=1200, consultation_day=None):
     """Notes and keyed evidence blocks that the answer may use, in the order of retrieval."""
     notes = []
@@ -362,6 +400,13 @@ def context(index, retrieval, facts=None, note_chars=1200, consultation_day=None
         notes.append(entry)
     evidence = []
     for number, block in enumerate(retrieval["blocks"], start=1):
+        if "quotation" in block:
+            entry = {"key": f"E{number}", "citation": block["quotation"], "link": f"{block['note']}#^{block['block']}",
+                     "sourceUrl": block["sourceUrl"], "availableFrom": block["availableFrom"], "text": block["text"]}
+            if consultation_day and block["availableFrom"] > consultation_day:
+                entry["versionNote"] = "상담 당시 이용 가능한 인용문인지 확인할 수 없음"
+            evidence.append(entry)
+            continue
         note = index.notes[block["note"]]
         suffix = re.sub(r"^v\d{8}-", "", block["block"])
         label = block["note"] + ("" if suffix == "t" else block_label(suffix))

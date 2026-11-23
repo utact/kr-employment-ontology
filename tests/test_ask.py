@@ -10,6 +10,27 @@ import llm
 SOURCE = {"key": "E1", "citation": "시험 규정", "text": "지정한 날에 신청한다."}
 
 
+def test_cited_raw_quote_reaches_answer_but_is_not_a_search_seed(tmp_path):
+    wiki, raw = tmp_path / "wiki", tmp_path / "raw"
+    wiki.mkdir()
+    raw.mkdir()
+    text = SOURCE["text"]
+    (wiki / "신청.md").write_text("---\ntype: Rule\nstatus: reviewed\nsource: ['[[안내#^q1]]']\n---\n신청", encoding="utf8")
+    (raw / "안내.md").write_text(
+        f"---\nidentifier: raw-work24-guide\nurl: https://example.org\ngeneratedAtTime: '2025-01-03'\n"
+        f"hasPart:\n- identifier: raw-work24-guide-q1\n  text: {text}\n  sha256: {lawlib.body_hash(text)}\n---\n{text} ^q1\n",
+        encoding="utf8")
+    index = ask.Index(tmp_path)
+    assert set(index.docs) == {"신청"}
+    retrieval = index.retrieve("신청", "2025-01-03")
+    evidence = ask.context(index, retrieval, consultation_day="2025-01-03")["evidence"]
+    assert evidence[0]["text"] == text and evidence[0]["link"] == "안내#^q1"
+    assert ask.render(statement(), evidence)["citations"] == ["E1"]
+    earlier = ask.context(index, retrieval, consultation_day="2025-01-02")["evidence"]
+    with pytest.raises(ValueError, match="시행본"):
+        ask.render(statement(), earlier)
+
+
 def statement(quote="지정한 날에"):
     return {"action": "answer", "statements": [
         {"text": "지정한 날에 신청하세요.", "support": [{"key": "E1", "quote": quote}]}
