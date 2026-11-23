@@ -1,8 +1,37 @@
 """Tests for the 고용24 guide parser in scripts/collect.py, with the structure of the 실업급여(상용직) page."""
 
+import json
+from datetime import date
+
 import pytest
 
 import collect
+
+
+def test_announcements_use_publication_not_effective_date_and_deduplicate(monkeypatch):
+    calls = []
+    law = {"법령명한글": "고용보험법", "공포일자": "20251223", "시행일자": "20260101", "법령일련번호": "1"}
+    notice = {"행정규칙명": "고시", "행정규칙ID": "9", "발령일자": "20251223", "시행일자": "20260301", "행정규칙일련번호": "10"}
+
+    def api(endpoint, target, **params):
+        calls.append((target, params))
+        if target == "eflaw":
+            rows = [law, {**law, "법령명한글": "다른 법"}]
+            return json.dumps({"LawSearch": {"totalCnt": 2, "law": rows}}), ""
+        return json.dumps({"AdmRulSearch": {"totalCnt": 1, "admrul": notice}}), ""
+
+    monkeypatch.setattr(collect.L, "law_api", api)
+    monkeypatch.setattr(collect, "SOURCES", {"laws": ["고용보험법"], "admrul": [{"id": "9"}]})
+    result = collect.announcements(date(2025, 12, 23), date(2025, 12, 23))
+    assert {r["일련번호"] for r in result} == {"1", "10"} and len(result) == 2
+    assert calls[0][1]["ancYd"] == calls[1][1]["prmlYd"] == "20251223~20251223"
+    assert [params["nw"] for _, params in calls[1:]] == [1, 2]
+
+
+def test_announcement_failure_is_not_an_empty_result(monkeypatch):
+    monkeypatch.setattr(collect.L, "law_api", lambda *a, **kw: ('{"LawSearch":{"totalCnt":1}}', ""))
+    with pytest.raises(ValueError, match="Incomplete"):
+        collect.announcement_rows("eflaw", "20250101~20250101")
 
 PAGE = """<h2>실업급여(상용직)</h2>
 <ul class="box_list_doc type02">

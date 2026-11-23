@@ -144,6 +144,9 @@ class Note:
 
 class Index:
     def __init__(self, root=ROOT):
+        import lawlib
+
+        self.reference_day = lawlib.release(root)[0].isoformat()
         notes = (Note(p) for p in sorted((root / "wiki").rglob("*.md")))
         self.notes = {note.name: note for note in notes if note.meta.get("status") in {"verified", "reviewed"}}
         targets = {target for note in self.notes.values() for target, anchor in note.sources
@@ -704,7 +707,7 @@ def answer(index, question, as_of, provider=None, top=16, link=None, check=True)
     retrieval = index.retrieve(question, as_of=day, top=top, terms=link["terms"], linked=link["notes"])
     bundle = context(index, retrieval, facts=link.get("facts"), consultation_day=as_of)
     payload = response_input(question, as_of, day, bundle["notes"], bundle["evidence"], "vault")
-    return {**generate(payload, provider, check), "link": link,
+    return {**generate(payload, provider, check), "vaultAsOf": index.reference_day, "link": link,
             "retrieval": {k: retrieval[k] for k in ("seeds", "notes")}}
 
 
@@ -806,6 +809,9 @@ def customer_text(record):
     refs = [f"[{key}] {sources[key]['citation']}" for key in output["citations"] if key in sources]
     if refs:
         sections.append("\n".join(refs))
+    reference_day = record.get("vaultAsOf")
+    if reference_day and record["asOf"] > reference_day:
+        sections.append(f"근거 자료의 기준일은 {reference_day}입니다. 이후 개정 여부는 별도 확인이 필요합니다.")
     return "\n\n".join(s for s in sections if s)
 
 

@@ -18,9 +18,9 @@
 
 ## Source updates
 
-질문을 받기 전에 원문을 수집해 노트에 연결한다. 원문과 vault 버전을 보존하면 평가에 쓴 자료를 다시 대조할 수 있다. 법령 데이터에 MCP로 접근해 상담 시점에 원문을 조회하는 방식도 가능하다. 이 저장소의 자유질문 경로는 로컬 자료를 읽는다. [MCP의 도구와 리소스](https://modelcontextprotocol.io/docs/learn/architecture)
+질문을 받기 전에 법제처 공동활용 API와 고용24 안내에서 원문을 수집해 노트에 연결한다. 원문과 vault 버전을 보존하면 평가에 쓴 자료를 다시 대조할 수 있다. 자유질문 경로는 로컬 자료를 읽는다. [법제처 API](https://open.law.go.kr/LSO/openApi/guideList.do)
 
-새 공포가 있으면 시행예정본도 다시 수집한다. vault 기준일을 바꿀 때는 조문 노트를 다시 생성하고 인용 근거가 바뀐 지식 노트를 재검증한다. 수집기를 언제 실행할지는 운영자가 정한다. 상담일이 vault 기준일보다 늦어도 자유질문 경로는 그 사이의 개정을 원격으로 확인하지 않는다. [원문 수집 기준](../ontology/sources.md#raw-sources) · [기준일](../ontology/release.yaml)
+운영자는 `scripts/collect.py changes 시작일 종료일`로 수집 대상 법령의 공포와 행정규칙의 발령을 확인한다. 날짜는 `YYYY-MM-DD`로 입력한다. 새 공포가 있으면 시행예정본도 다시 수집한다. 기준일을 변경할 때는 조문 노트를 다시 생성하고 인용 근거가 바뀐 지식 노트를 재검증한다. 상담일이 vault 기준일보다 늦으면 답변에 자료 기준일을 표시한다. [원문 수집 기준](../ontology/sources.md#raw-sources) · [기준일](../ontology/release.yaml)
 
 ## Question answering
 

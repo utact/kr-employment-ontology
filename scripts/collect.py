@@ -3,6 +3,7 @@
 Usage:
     uv run python -X utf8 scripts/collect.py [laws|admrul|work24|interpretations|shapes|cited|all]
     uv run python -X utf8 scripts/collect.py quote <page name> <section> <text>
+    uv run python -X utf8 scripts/collect.py changes YYYY-MM-DD YYYY-MM-DD
 
 Writes raw notes under raw/, keeps uncited earlier versions in .cache/law/ and
 .cache/admrul/, and writes a report to .cache/collect-<what>.json.
@@ -18,6 +19,7 @@ import re
 import sys
 import urllib.parse
 from pathlib import Path
+from datetime import date
 
 import yaml
 
@@ -73,6 +75,46 @@ def version_list(name):
         page += 1
     seen = sum(len(L.as_list(p.get("law"))) for p in pages)
     return rows, pages, seen, int(pages[0]["totalCnt"])
+
+
+def announcement_rows(target, period, **params):
+    """Read a complete promulgation or issue-date listing, including later-effective versions."""
+    law = target == "eflaw"
+    root, field = ("LawSearch", "law") if law else ("AdmRulSearch", "admrul")
+    params["ancYd" if law else "prmlYd"] = period
+    rows, page = [], 1
+    while True:
+        text, _ = L.law_api("lawSearch", target=target, display=100, page=page, **params)
+        data = json.loads(text)[root]
+        rows.extend(L.as_list(data.get(field)))
+        total = int(data["totalCnt"])
+        if page * 100 >= total:
+            break
+        page += 1
+    if len(rows) != total:
+        raise ValueError(f"Incomplete {target} listing ({len(rows)}/{total})")
+    return rows
+
+
+def announcements(start, end):
+    if start > end:
+        raise ValueError("시작일은 종료일보다 늦을 수 없습니다.")
+    first, last = start.strftime("%Y%m%d"), end.strftime("%Y%m%d")
+    period = f"{first}~{last}"
+    laws = SOURCES["laws"] + SOURCES.get("references", [])
+    ids = {r["id"] for r in SOURCES["admrul"]}
+    found = set()
+    for row in announcement_rows("eflaw", period):
+        name = row["법령명한글"]
+        if first <= row["공포일자"] <= last and any(L.same_name(name, law) for law in laws):
+            found.add(("법령", name, row["공포일자"], row["시행일자"], row["법령일련번호"]))
+    for status in (1, 2):
+        for row in announcement_rows("admrul", period, nw=status):
+            name = row["행정규칙명"]
+            if row["행정규칙ID"] in ids and first <= row["발령일자"] <= last and not DRAFT.search(name):
+                found.add(("행정규칙", name, row["발령일자"], row["시행일자"], row["행정규칙일련번호"]))
+    return [dict(zip(("구분", "명칭", "공포·발령일", "시행일", "일련번호"), item))
+            for item in sorted(found, key=lambda x: (x[2], x))]
 
 
 def fetch_law(mst, effective):
@@ -502,6 +544,15 @@ def main():
     if not sys.flags.utf8_mode:
         sys.exit("Run with python -X utf8.")
     what = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if what == "changes":
+        if len(sys.argv) != 4:
+            sys.exit("Usage: collect.py changes YYYY-MM-DD YYYY-MM-DD")
+        try:
+            rows = announcements(date.fromisoformat(sys.argv[2]), date.fromisoformat(sys.argv[3]))
+        except (OSError, KeyError, ValueError) as error:
+            sys.exit(f"공포·발령 목록 조회 실패 ({type(error).__name__}). 기간, 인증 설정과 API 응답을 확인하세요.")
+        print(json.dumps({"from": sys.argv[2], "through": sys.argv[3], "announcements": rows}, ensure_ascii=False, indent=2))
+        return
     if what == "quote":
         if len(sys.argv) != 5:
             sys.exit("Usage: collect.py quote <page name> <section> <text>")

@@ -21,7 +21,7 @@ VAULT = Path(__file__).resolve().parents[1]
 RAW = VAULT / "raw"
 CACHE = VAULT / ".cache"
 KST = timezone(timedelta(hours=9))
-LAW_API = "http://www.law.go.kr/DRF"
+LAW_API = "https://www.law.go.kr/DRF"
 PUBLISHERS = {"law": "ministry-of-government-legislation", "work24": "korea-employment-information-service"}
 LICENSES = {
     "law": "저작권법 제7조에 따라 보호받지 않는 저작물",

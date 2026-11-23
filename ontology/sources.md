@@ -4,6 +4,8 @@ These rules govern how raw sources are collected and stored, how statute notes a
 
 ## Raw sources
 
+`uv run python -X utf8 scripts/collect.py changes YYYY-MM-DD YYYY-MM-DD` lists promulgations of the configured laws and issues of the configured administrative rules over an inclusive date range. It checks publication dates so that a future effective date does not hide a new amendment. It reads the official [law listing](https://open.law.go.kr/LSO/openApi/guideResult.do?htmlName=lsEfYdListGuide) and [administrative rule listing](https://open.law.go.kr/LSO/openApi/guideResult.do?htmlName=admrulListGuide). The command reports matches without advancing the reference date or modifying sources. Check guides and court or interpretation records separately.
+
 - Collect sources with `uv run python -X utf8 scripts/collect.py`, which reads the source list in `scripts/sources.yaml`.
   - Read API keys from `.env`.
   - Strip credential parameters such as `OC` from every stored URL and response.

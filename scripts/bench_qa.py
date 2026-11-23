@@ -65,6 +65,7 @@ def inputs(path, context):
 def product_version():
     root = ask.ROOT
     files = [root / "scripts" / name for name in ("ask.py", "bench_qa.py", "llm.py", "lawlib.py", "statutes.py")]
+    files.append(root / "ontology/release.yaml")
     entries = {p.relative_to(root).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                for p in [*files, *sorted((root / "wiki").rglob("*.md")), *sorted((root / "raw").rglob("*.md")),
                          *sorted((root / "raw/law/판례").glob("*.json")), *sorted((root / "raw/law/법령해석례").glob("*.json"))]}

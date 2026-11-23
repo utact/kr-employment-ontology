@@ -129,6 +129,13 @@ def test_future_effective_date_can_only_use_rules_already_announced():
     assert ask.render(statement(), [announced])["citations"] == ["E1"]
 
 
+def test_show_reference_date_for_later_consultations():
+    record = {"output": {"answer": "답변", "questions": [], "citations": []}, "evidence": [],
+              "vaultAsOf": "2026-10-14", "asOf": "2026-10-14"}
+    assert ask.customer_text(record) == "답변"
+    assert "2026-10-14" in ask.customer_text({**record, "asOf": "2026-11-23"})
+
+
 def test_missing_historical_statute_never_substitutes_a_future_or_stale_version(monkeypatch):
     rows = [{"시행일자": d} for d in ("20250101", "20260101")]
     monkeypatch.setattr(lawlib, "stored_versions", lambda law: ({"20250101": {}}, rows, {}, {}))
