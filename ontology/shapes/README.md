@@ -1,4 +1,4 @@
-# 공식 SHACL shape
+# Official SHACL shapes
 
 schema가 따르는 표준의 공식 SHACL shape이다. `scripts/vault.py check`가 RDF를 이 shape으로도 검사한다.
 

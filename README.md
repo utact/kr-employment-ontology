@@ -13,11 +13,11 @@
 | 2026-09-30 | 66,000원 | 68,100원 |
 | 2025-12-31 | 66,000원 | 66,000원 |
 
-2026-01-01부터 고용보험법 시행령 제68조제1항의 기초일액 상한은 113,500원이고, 법 제46조제1항제1호의 지급 비율 60%를 곱하면 68,100원이다. 부칙 제35934호 제4조는 시행 전 이직자에게 종전 규정을 적용한다. [1350 상담 안내](https://1350.moel.go.kr/rtmview.do?id=1000324861)도 두 상한액과 적용 시점을 밝힌다. 응답은 2026-11-09에 수집했고, 두 질문으로 서비스 전체의 정확도를 평가하지 않는다. [수집 기록](view/README.md#비교-응답)
+2026-01-01부터 고용보험법 시행령 제68조제1항의 기초일액 상한은 113,500원이고, 법 제46조제1항제1호의 지급 비율 60%를 곱하면 68,100원이다. 부칙 제35934호 제4조는 시행 전 이직자에게 종전 규정을 적용한다. [1350 상담 안내](https://1350.moel.go.kr/rtmview.do?id=1000324861)도 두 상한액과 적용 시점을 밝힌다. 응답은 2026-11-09에 수집했고, 두 질문으로 서비스 전체의 정확도를 평가하지 않는다. [수집 기록](view/README.md#baseline-responses)
 
 ## Evaluation
 
-1350 공개 상담 질문으로 같은 모델의 볼트 유무에 따른 응답 차이를 살핀다. 개발용에서 결론이나 안내가 갈린 사례를 검토하고, 별도 평가용 사례에서 챗봇과 AI 노동법 상담의 응답 품질을 비교한다. [평가 절차](docs/free-question-benchmark.md) · [역량 질문](docs/competency-questions.md)
+1350 공개 상담 질문으로 같은 모델의 볼트 유무에 따른 응답 차이를 살핀다. development set에서 결론이나 안내가 갈린 사례를 검토하고, test set에서 챗봇과 AI 노동법 상담의 응답 품질을 비교한다. [평가 절차](docs/evaluation-protocol.md) · [역량 질문](docs/competency-questions.md)
 
 ## Data and schema
 
@@ -43,7 +43,7 @@ flowchart LR
     D --> E["답변 생성·인용 검사"]
 ```
 
-원문·지식·스키마를 나눈 [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 방식이다. 법령 조문 노트는 스크립트가 원문에서 생성하고, LLM은 원문을 인용해 지식과 관계를 쓰며, 별도 검증 에이전트가 대조한다. [운영 규칙](AGENTS.md) · [구현 구조](docs/implementation.md)
+원문·지식·스키마를 나눈 [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 방식이다. 법령 조문 노트는 스크립트가 원문에서 생성하고, LLM은 원문을 인용해 지식과 관계를 쓰며, 별도 검증 에이전트가 대조한다. [운영 규칙](AGENTS.md) · [구현 구조](docs/architecture.md)
 
 ## Quick start
 
@@ -55,7 +55,7 @@ cd kr-employment-ontology
 uv sync --frozen
 ```
 
-질문에 답하려면 `.env.example`을 `.env`로 복사하고 언어 모델 설정을 채운다. `--as-of`로 상담 기준일을 지정한다. [시행본 선택](docs/implementation.md#챗봇)
+질문에 답하려면 `.env.example`을 `.env`로 복사하고 언어 모델 설정을 채운다. `--as-of`로 상담 기준일을 지정한다. [시행본 선택](docs/architecture.md#question-answering)
 
 ```sh
 uv run python -X utf8 scripts/ask.py answer "2025년 12월 31일에 퇴사한 일용근로자의 구직급여 하루 상한액은?" --as-of 2026-01-15 --provider nvidia --format text
@@ -74,4 +74,4 @@ uv run python -X utf8 -m pytest
 
 ## License
 
-코드는 [MIT License](LICENSE)를 따른다. 수집 원문, 표준과 시각 자산의 이용 조건은 각 출처 표기를 따른다. [표준 출처](ontology/shapes/README.md) · [시각 자산 출처](view/README.md#심벌)
+코드는 [MIT License](LICENSE)를 따른다. 수집 원문, 표준과 시각 자산의 이용 조건은 각 출처 표기를 따른다. [표준 출처](ontology/shapes/README.md) · [시각 자산 출처](view/README.md#visual-assets)

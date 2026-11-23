@@ -479,7 +479,7 @@ def collect_shapes(generated, report):
     readme = folder / "README.md"
     previous = readme.read_text(encoding="utf-8") if readme.exists() else ""
     times = dict(re.findall(r"^\| `([^`]+)` \|.*\| (\d{4}-\d{2}-\d{2} \d{2}:\d{2}) \| `[0-9a-f]+` \|$", previous, re.M))
-    lines = ["# 공식 SHACL shape", "", "schema가 따르는 표준의 공식 SHACL shape이다. `scripts/vault.py check`가 RDF를 이 shape으로도 검사한다.", "",
+    lines = ["# Official SHACL shapes", "", "schema가 따르는 표준의 공식 SHACL shape이다. `scripts/vault.py check`가 RDF를 이 shape으로도 검사한다.", "",
              "SHA-256은 저장한 파일 바이트의 hash다.", "",
              "| 파일 | 표준 | 원본 | 이용 조건 | 수집 일시 | SHA-256 |", "| --- | --- | --- | --- | --- | --- |"]
     for source in SOURCES.get("shapes", []):

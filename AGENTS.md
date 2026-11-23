@@ -317,7 +317,8 @@ Obsidian's graph view draws links without their kind, so `views/` shows the onto
 - Choose the language by reader.
   - `AGENTS.md` and `ontology/sources.md`: English
   - `ontology/schema.md` and `index.md`: English headings, Korean prose
-  - `README.md`, `docs/` and vault notes in `wiki/` and `raw/`: Korean
+  - `README.md` and `docs/`: Korean prose with English technical titles and headings
+  - Vault notes in `wiki/` and `raw/`: Korean
 - In Korean prose, write technical terms whose original is English in English.
   - Examples: ontology, schema, class, property, instance, wiki, vault, wikilink, backlink, frontmatter, callout, agent, context, hash
 - In Korean prose, write loanwords listed in the Korean dictionary in Korean.
@@ -356,7 +357,7 @@ Obsidian's graph view draws links without their kind, so `views/` shows the onto
 - Headings
   - Start a repository document with a single `#` heading.
   - Give vault notes no `#` heading, because the file name is the title.
-  - Use one language for all headings of a document.
+  - Use established English terms for technical headings in repository documentation. Keep Korean names for legal topics and user scenarios.
   - Never skip a heading level.
 - Spacing
   - Put one blank line between headings, paragraphs, lists, tables and code blocks.
