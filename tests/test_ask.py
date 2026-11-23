@@ -37,6 +37,20 @@ def statement(quote="지정한 날에"):
     ], "questions": []}
 
 
+def test_relation_ablation_keeps_seeds_linked_notes_and_budget(tmp_path):
+    folder = tmp_path / "wiki"
+    folder.mkdir()
+    for name, relation in [("신청 기준", "requires: '[[예외]]'"), ("예외", ""), ("신청 방법", "")]:
+        (folder / f"{name}.md").write_text(f"---\ntype: Rule\nstatus: verified\n{relation}\n---\n{name}", encoding="utf8")
+    index = ask.Index(tmp_path)
+    settings = dict(linked=["신청 기준"], seeds=1, top=2, as_of="2026-10-14")
+    graph = index.retrieve("신청 기준", **settings)
+    flat = index.retrieve("신청 기준", **settings, use_relations=False)
+    assert graph["seeds"] == flat["seeds"]
+    assert [n["note"] for n in graph["notes"]] == ["신청 기준", "예외"]
+    assert [n["note"] for n in flat["notes"]] == ["신청 기준", "신청 방법"]
+
+
 def test_review_sees_omitted_evidence_and_rejects_a_fabricated_quote(monkeypatch):
     evidence = [SOURCE, {"key": "E2", "citation": "예외", "text": "다음 날 신청할 수 있다."}]
     payload = ask.response_input("언제 신청해요?", "2026-10-01", "2026-10-01", [], evidence, "vault")

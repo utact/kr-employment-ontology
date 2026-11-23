@@ -238,7 +238,7 @@ class Index:
                 "facts": answer.get("facts", {}), "missing": answer.get("missing", []),
                 "model": result["model"], "usage": result["usage"], "durationMs": result["durationMs"]}
 
-    def retrieve(self, question, as_of=None, seeds=10, top=16, terms=(), linked=(), max_blocks=60):
+    def retrieve(self, question, as_of=None, seeds=10, top=16, terms=(), linked=(), max_blocks=60, use_relations=True):
         """Notes and cited statute blocks for a question, with the trace of each step.
 
         Linked notes, chosen by a model from the catalog, seed the graph with the weight of the best lexical match.
@@ -256,7 +256,7 @@ class Index:
         ranked = sorted(seed, key=seed.get, reverse=True)
         if not seed:
             return {"question": question, "asOf": as_of, "seeds": [], "notes": [], "blocks": []}
-        rank = self.spread(seed)
+        rank = self.spread(seed) if use_relations else {**lexical, **seed}
         # Linked notes always stay, because the model chose them for the question; the graph fills the rest.
         kept = [n for n in linked if n in self.notes and not self.notes[n].statute][:top]
         chosen = kept + [n for n in sorted((n for n in rank if not self.notes[n].statute), key=rank.get, reverse=True)
@@ -266,7 +266,7 @@ class Index:
             "question": question, "asOf": as_of, "terms": list(terms), "linked": list(linked),
             "seeds": [{"note": n, "score": round(seed[n], 3)} for n in ranked],
             "notes": [{"note": n, "type": self.notes[n].type, "score": round(rank[n], 5),
-                       "seed": n in seed, "via": self.via(n, seed, chosen)} for n in chosen],
+                       "seed": n in seed, "via": self.via(n, seed, chosen) if use_relations else []} for n in chosen],
             "blocks": blocks,
         }
 
@@ -757,6 +757,9 @@ def main():
     retrieve.add_argument("--top", type=int, default=12)
     retrieve.add_argument("--json", action="store_true")
     retrieve.add_argument("--link", action="store_true", help="let the model pick entry notes from the catalog first")
+    retrieve.add_argument("--compare-relations", action="store_true",
+                          help="emit both retrieval results as JSON using the same entry notes, date and limits")
+    retrieve.add_argument("--provider", help="provider for the optional catalog linking call")
     reply = sub.add_parser("answer")
     reply.add_argument("question")
     reply.add_argument("--as-of")
@@ -772,8 +775,16 @@ def main():
             print(customer_text(result))
         return
     as_of = args.as_of or date.today().isoformat()
-    link = index.link(args.question, as_of) if args.link else {"terms": [], "notes": []}
-    result = index.retrieve(args.question, as_of=as_of, top=args.top, terms=link["terms"], linked=link["notes"])
+    link = index.link(args.question, as_of, args.provider) if args.link else {"terms": [], "notes": []}
+    day = version_day(args.question, link.get("facts") or {}, as_of) if args.compare_relations else as_of
+    settings = dict(as_of=day, top=args.top, terms=link["terms"], linked=link["notes"])
+    result = index.retrieve(args.question, **settings)
+    if args.compare_relations:
+        lexical = index.retrieve(args.question, **settings, use_relations=False)
+        pair = {"question": args.question, "consultationDay": as_of, "link": link if args.link else None,
+                "withRelations": result, "withoutRelations": lexical}
+        print(json.dumps(pair, ensure_ascii=False, indent=2))
+        return
     result["link"] = link if args.link else None
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
