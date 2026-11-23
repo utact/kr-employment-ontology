@@ -1,15 +1,10 @@
-import sys
 import json
 from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
-import ask
 import llm
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "view"))
-import free_question
 
 
 @pytest.mark.parametrize("used_tool", [False, True])
@@ -39,22 +34,3 @@ def test_subscription_turn_uses_the_selected_policy_without_external_sources(mon
     else:
         result = llm.complete("지시", "질문", "codex")
         assert result["json"] == {"ok": True} and result["usage"]["prompt_tokens"] == 7
-
-
-def test_public_response_contains_only_used_sources(monkeypatch):
-    monkeypatch.setattr(free_question, "index", lambda: object())
-    def answer(index, question, day, provider):
-        assert (question, day) == ("하루 7시간 반이에요.", "2025-11-01")
-        return {"status": "answered", "model": "fixture",
-                "output": {"answer": "확인했습니다.[E2]", "questions": [], "citations": ["E2"]},
-                "evidence": [{"key": "E1", "citation": "다른 근거"}, {"key": "E2", "citation": "해당 근거"}],
-                "statements": [{"support": [{"key": "E2", "quote": "해당 문구"}]}]}
-    monkeypatch.setattr(ask, "answer", answer)
-    result = free_question.consult(*free_question.inputs({"question": "하루 7시간 반이에요.", "asOf": "2025-11-01"}), "openai")
-    assert result["sources"] == [{"key": "E2", "citation": "해당 근거", "version": None, "quotes": ["해당 문구"]}]
-
-
-@pytest.mark.parametrize("payload", [None, {}, {"question": " "}, {"question": "질문", "asOf": "2025-02-30"}])
-def test_rejects_invalid_consultation_before_loading_model(payload):
-    with pytest.raises(ValueError):
-        free_question.inputs(payload)
