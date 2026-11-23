@@ -1,6 +1,11 @@
 # Korean Employment Ontology
 
-이직한 근로자가 실업급여의 자격, 금액, 신청 절차를 확인할 수 있도록 돕는 챗봇을 만든다. 대한민국 고용보험 법령의 조·항·호와 시행 시점을 요건, 계산 규칙, 절차, 증빙에 연결한 ontology를 근거로 쓴다. 지식과 출처를 보관하는 Obsidian 폴더를 vault라고 한다.
+[![Python 3.12+](https://img.shields.io/badge/Python-3.12%2B-3776AB)](pyproject.toml)
+[![Obsidian](https://img.shields.io/badge/Obsidian-7C3AED)](index.md)
+[![LinkML](https://img.shields.io/badge/LinkML-2563EB)](ontology/schema.yaml)
+[![SHACL](https://img.shields.io/badge/SHACL-176B50)](ontology/shapes/README.md)
+
+이직한 근로자가 실업급여의 자격, 금액, 신청 절차를 확인할 수 있도록 돕는 챗봇이다. 고용보험 법령의 조·항·호와 시행 시점을 요건, 계산 규칙, 증빙에 연결한 ontology를 Obsidian vault에 담는다. 이 지식이 같은 언어 모델의 답을 개선하는지, 개선한 챗봇이 고용노동부 AI 노동법 상담보다 정확하고 이해하기 쉽게 답하는지를 검증한다.
 
 ## Demo
 
@@ -17,7 +22,13 @@
 
 ## Evaluation
 
-1350 공개 상담 질문으로 같은 모델의 vault 유무에 따른 응답 차이를 살핀다. development set에서 결론이나 안내가 갈린 사례를 검토하고, test set에서 챗봇과 AI 노동법 상담의 응답 품질을 비교한다. [평가 절차](docs/evaluation-protocol.md) · [역량 질문](docs/competency-questions.md)
+실제 상담에서는 질문자가 이직일을 생략하거나 한 질문에 여러 쟁점을 함께 묻는다. 이런 조건에서도 답할 수 있는지 확인하려고 고용노동부 고객상담센터 1350의 공개 상담을 수집했다. 2026-11-19 수집본의 관측 390건 중 질문이 아닌 1건을 제외한 389건을 비식별 재서술했다. 모델에는 질문과 상담 기준일만 제공한다. 게시 답변은 별도로 보관하고, 채점에는 사건 당시의 법령과 공식 자료를 대조해 사람이 검토한 기준 답안을 쓴다. [1350 공개 상담](https://1350.moel.go.kr/rtmlist.do)
+
+1. 중복·후속 질문을 원래 상담과 묶고, 관련 조문이나 장·절을 기준으로 층화해 development set 272건과 test set 117건으로 나눴다. 같은 상담의 일부가 개발과 평가에 걸치는 일을 막기 위해서다.
+2. development set에서는 같은 모델에 vault를 제공했을 때 결론, 적용 조건, 다음 행동이 달라진 사례부터 검토한다. 기준 답안과 어긋난 지점을 찾아 지식이나 답변 과정을 고친다. 두 답이 일치한 사례도 보관한다.
+3. test set에서는 개선을 마친 챗봇과 AI 노동법 상담에 같은 질문을 입력해 비교한다. 분할 전에 개선에 활용한 사례는 독립 평가 점수에서 제외한다.
+
+상담 답변의 정확성·근거 검색·질문과 근거에 없는 내용의 혼입·간결성을 평가한다. ontology가 필요한 조건과 근거를 표현하는지는 competency questions로 별도 검사한다. [평가 절차](docs/evaluation-protocol.md) · [Competency questions](docs/competency-questions.md)
 
 ## Data and schema
 
