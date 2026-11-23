@@ -97,7 +97,7 @@ The vault has three layers: raw sources that are never edited, the wiki that the
   - Add a quotation with `uv run python -X utf8 scripts/collect.py quote "<page name>" <section> "<text>"`, which checks it against the section of the stored page and appends it to the latest raw note. `scripts/check_raw.py` checks the numbering, blocks, hashes and text of every quotation, of 고용24 guides and 법령해석례 alike.
 - Fill every required property in the Raw sources section of `ontology/schema.md`, and the optional ones that apply.
 - Set `sha256` to the SHA-256 of the stored response file followed by its attachments in their order.
-  - The latest retrieval of each version stores every attachment. An earlier retrieval keeps the files it stored, such as the 법령 retrievals of 2026-10-15 13:37 made before image files were collected.
+  - The latest retrieval of each version stores every attachment. An earlier retrieval keeps the files it stored.
   - This hash does not depend on how scripts read the text, so a change in the reading rules leaves raw notes as they are.
   - Any change in a response makes a new raw note, even in a field outside the text, such as a contact number.
   - For a 고용24 guide, whose page stays out of Git, use the text of its body area without whitespace, section by section. This hash changes when the reading of the page changes.
@@ -142,7 +142,7 @@ The vault has three layers: raw sources that are never edited, the wiki that the
   - When two 부칙 of a law share a 공포번호, add the 공포일자 in parentheses, as in `고용보험법 시행규칙 부칙 제263호 (2019. 9. 30.)` and `고용보험법 시행규칙 부칙 제263호 (2019. 10. 15.)`.
   - Collapse runs of whitespace in a name that 법제처 gives, such as the trailing space of the 2026 `예술인의 실업인정대상기간 중 발생한 1일 평균소득에서 제외하는 금액 고시`.
 - Give a unit a new version only when its version text, defined in Text checks, changes.
-  - A change of the amendment tags alone also makes a new version, because the tag records an amendment, as in 32 of 1,537 unit changes up to 2026-10-15.
+  - A change of the amendment tags alone also makes a new version, because the tag records an amendment.
   - Date the version by the 시행일자 of the earliest law version in the latest unbroken run of versions that have this text of the unit. This is the version's `firstDateEntryInForce`.
   - Check the date against the text: a promulgation of the law version found must have the date of the latest amendment tag of the unit, such as `<개정 2021.1.5>`.
   - Record that promulgation's 공포일자, 공포번호 and MST in the version.
@@ -477,9 +477,7 @@ Lint compares each number with the cited blocks, not the claim it makes. A sente
 - Put under `defer` the 장 and articles that the human owner has put off to a later phase, with the matter as the reason.
   - They stay out of the count, together with the articles they delegate to.
   - The report lists them by reason, with those that no note cites yet, so that they can be taken up later.
-- Finish the core flow before details: 이직, 이직확인서, 실업의 신고, 수급자격 인정, 실업의 인정 and 지급 for 근로자, with 취업촉진 수당 and 연장급여.
-  - Complete it to verified notes before drafting deferred matters or rare cases of special groups.
-  - Settle each question that a source settles. Leave the others open in their callouts, rare cases included; they do not hold up the core flow.
+- Settle each question that a source settles, and leave the others open in their callouts.
 
 ### Competency questions
 
@@ -595,8 +593,4 @@ Obsidian's graph view draws links without their kind, so `views/` shows the onto
 
 ### Commits
 
-- Write the subject as `type(scope): 한국어 요약`.
-  - Type and scope are lowercase English.
-  - The scope is optional.
-- Write the body as a short `-` list after a blank line.
 - Commit each unit of work on `main`.

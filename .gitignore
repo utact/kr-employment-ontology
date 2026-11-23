@@ -1,19 +1,24 @@
+# Secrets
 .env
 .env.*
 !.env.example
 
+# Obsidian workspace
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
 .trash/
-.claude/worktrees/
 
+# Python
 .venv/
 __pycache__/
 
-raw/work24/**/*.html
+# Sources kept local: uncited versions and 고용24 pages
 .cache/
+raw/work24/**/*.html
 
+# Local tools and test output
+.claude/worktrees/
 tests/fixtures/vault/.obsidian/
 
-# Local research, service comparisons, and application prototypes.
+# Evaluation data, never published
 docs/evaluation/
