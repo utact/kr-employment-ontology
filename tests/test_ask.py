@@ -136,6 +136,18 @@ def test_calculation_cannot_drop_part_of_the_users_workday(hours):
         ask.render(result, [source], question=hours)
 
 
+@pytest.mark.parametrize("reason", ["out_of_scope", "insufficient_evidence"])
+def test_refusal_does_not_allow_uncited_advice_and_clarification_can_give_partial_help(reason):
+    request = {"action": "decline", "reason": reason, "questions": [], "statements": []}
+    refusal = ask.render(request, [])
+    assert refusal["reason"] == reason and not refusal["citations"]
+    assert not ask.check_answer(refusal, {"evidence": []})
+    with pytest.raises(ValueError):
+        ask.render({**request, "statements": statement()["statements"]}, [])
+    partial = ask.render({**statement(), "action": "clarify", "questions": ["언제 신청하셨나요?"]}, [SOURCE])
+    assert partial["answer"] and partial["citations"] and partial["questions"]
+
+
 def test_case_date_needs_a_real_date_from_the_question():
     facts = {"이직일": "2026-01-01", "이직일 원문": "2026년 1월 1일에 퇴사"}
     assert ask.version_day("2026년 1월 1일에 퇴사했어요.", facts, "2026-02-10") == "2026-01-01"

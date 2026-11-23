@@ -373,6 +373,10 @@ class Index:
         return entry
 
 
+DECLINE_MESSAGES = {
+    "out_of_scope": "이 상담은 이직과 실업급여를 다룹니다. 질문하신 내용은 상담 범위를 벗어납니다.",
+    "insufficient_evidence": "확인할 수 있는 자료만으로는 이 질문에 답하기 어렵습니다.",
+}
 ANSWER_FORMAT = (
     'JSON 객체 전체 형식은 {"action":"answer","statements":[{"text":"설명","support":[{"key":"E1","quote":"원문 일부"}]}],"questions":[]}다. '
     'statements에는 고객에게 보여줄 문단을 순서대로 넣는다. 한 항목은 같은 근거로 뒷받침되는 짧은 설명 하나다. '
@@ -382,7 +386,10 @@ ANSWER_FORMAT = (
     '예를 들어 시급과 시간, 비율의 곱은 "시급에 해당하는 숫자 * 시간에 해당하는 숫자 * 소수 비율" 형식이다. '
     '자료 없는 대조 모드에서는 기억한 자료를 원문처럼 인용하지 않고 support를 빈 배열로 둔다. '
     'questions는 답을 가르는 사실 중 사용자가 아직 말하지 않은 것을 묻는 배열이다. '
-    '정보를 더 받아야 한다면 {"action":"clarify","statements":[],"questions":["판단에 필요한 구체적인 질문"]} 형식을 쓸 수 있다.'
+    '사실이 빠졌으면 clarify로 필요한 질문을 적고, 이미 설명할 수 있는 부분은 statements에 담는다. '
+    '질문 전체가 이직·실업급여와 무관하면 {"action":"decline","reason":"out_of_scope","statements":[],"questions":[]}로 답한다. '
+    '상담 범위 안이지만 어떤 부분도 뒷받침할 수 없고 추가 사실로도 해결되지 않으면 같은 형식에 reason을 insufficient_evidence로 쓴다. '
+    '여러 쟁점이 섞이면 확인 가능한 부분부터 답한다. 생소한 표현이나 불완전한 질문만으로 거절하지 않는다.'
 )
 ANSWER_SYSTEM = (
     "한국 고용보험 상담자로서 질문자의 말투를 존중하는 쉬운 존댓말로 답한다. 첫 문장에서 질문에 직접 답한다. "
@@ -613,7 +620,7 @@ def check_answer(result, bundle):
     problems = []
     used = set(re.findall(r"\[(E\d+)\]", text)) | set(result.get("citations", []))
     problems += [f"unknown key {k}" for k in sorted(used - keys)]
-    if result.get("action") not in ("answer", "conditional", "clarify"):
+    if result.get("action") not in ("answer", "conditional", "clarify", "decline"):
         problems.append(f"unknown action {result.get('action')!r}")
     # Compare values, so that 110,000원 matches 11만원 and 60% matches 100분의 60, as lint reads numbers.
     for paragraph in text.split("\n\n"):
@@ -690,6 +697,11 @@ def render(model_output, evidence, grounded=True, question=""):
         raise ValueError("응답 객체 누락")
     action, questions = model_output.get("action"), model_output.get("questions")
     statements = model_output.get("statements")
+    if action == "decline":
+        reason = model_output.get("reason")
+        if not isinstance(reason, str) or reason not in DECLINE_MESSAGES or questions != [] or statements != []:
+            raise ValueError("답변을 보류한 사유 또는 형식 오류")
+        return {"action": action, "reason": reason, "answer": DECLINE_MESSAGES[reason], "questions": [], "citations": []}
     if action not in ("answer", "conditional", "clarify") or not isinstance(questions, list):
         raise ValueError("응답 유형 또는 되물음 형식 오류")
     if not all(isinstance(q, str) and q.strip() for q in questions) or (action == "clarify" and not questions):
@@ -784,7 +796,7 @@ def generate(payload, provider=None, check=True):
     try:
         output = render(candidate, evidence, grounded, payload["question"])
         problems = check_answer(output, payload) if grounded else []
-        status = "answered"
+        status = "declined" if output["action"] == "decline" else "answered"
     except ValueError as exc:
         output = {"action": "conditional", "answer": "확인한 근거만으로는 이 질문에 신뢰할 만한 답을 드리기 어렵습니다.",
                   "questions": [], "citations": []}
