@@ -24,10 +24,9 @@ The vault has three layers: raw sources that are never edited, the wiki that the
 | `scripts/` | — | Collection, generation and validation scripts |
 | `tests/` | — | Fixture notes and tests for the scripts |
 | `.cache/` | — | Local cache of uncited raw versions, ignored by Git |
-| `docs/` | — | Human-facing documents such as the roadmap and the decision record |
+| `docs/` | — | Human-facing documents such as the decision record |
 | `index.md` | — | Notes by class |
 | `log.md` | — | Operation log |
-| `TODO.md` | — | Current and next tasks of the human owner and the agent |
 
 ## Reference date
 
@@ -653,23 +652,3 @@ An entry for ingesting 고용보험법 looks like this.
   - The scope is optional.
 - Write the body as a short `-` list after a blank line.
 - Commit each unit of work on `main`.
-
-<!-- roadock-template: 1 -->
-## ROADOCK
-
-- Keep `TODO.md` under `## Human` and `## Agent`. Subheadings inherit the owner.
-- Human owns actions only the user can perform: credentials, access, device acceptance, and blocking decisions.
-- Agent owns implementation, investigation, design, and verification. Choose routine defaults; unscoped tasks belong to Agent.
-- Keep current and next actions, with unblocked work first. Merge duplicates and remove canceled work.
-- Write one clear Korean action per task, preferably within 24 characters excluding metadata.
-- Give Human tasks unique `<!-- roadock:task-id -->` suffixes. Preserve IDs when editing or moving tasks.
-- Use `Requires: id, id` only for blocking, incomplete Human tasks. Continue independent work and remove resolved dependencies.
-- Read TODO before work and update it with related changes.
-- Mark completion with `[x]` and keep recent results visible. Prune completed tasks once they no longer help current or next work.
-- Preserve unresolved work and necessary context when pruning. Use Git history for past progress.
-- Complete Human tasks only with user confirmation.
-- Refresh remote changes before editing or pushing. Preserve mobile Human completions.
-- Indent scope notes at least two spaces beyond the checkbox. Place them before child tasks or headings; link to details and exclude secrets.
-- Roadock hides headings and shows notes in task details. Dependencies are informational, not enforced.
-- Commit checklist updates with related changes. Push only with explicit approval.
-<!-- /roadock-template -->
