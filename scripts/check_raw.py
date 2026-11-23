@@ -1,4 +1,4 @@
-"""Check collected raw sources against the phase 3 gates.
+"""Check collected raw sources against the rules of ontology/sources.md.
 
 Usage:
     uv run python -X utf8 scripts/check_raw.py
