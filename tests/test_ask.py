@@ -1,0 +1,111 @@
+import json
+
+import pytest
+
+import ask
+import lawlib
+import llm
+
+
+SOURCE = {"key": "E1", "citation": "시험 규정", "text": "지정한 날에 신청한다."}
+
+
+def statement(quote="지정한 날에"):
+    return {"action": "answer", "statements": [
+        {"text": "지정한 날에 신청하세요.", "support": [{"key": "E1", "quote": quote}]}
+    ], "questions": []}
+
+
+def test_review_sees_omitted_evidence_and_rejects_a_fabricated_quote(monkeypatch):
+    evidence = [SOURCE, {"key": "E2", "citation": "예외", "text": "다음 날 신청할 수 있다."}]
+    payload = ask.response_input("언제 신청해요?", "2026-10-01", "2026-10-01", [], evidence, "vault")
+    calls = []
+
+    def complete(system, user, provider=None):
+        calls.append(json.loads(user))
+        candidate = statement() if len(calls) == 1 else statement("언제든지")
+        return {"json": candidate, "model": "test", "usage": {}, "durationMs": 1}
+
+    monkeypatch.setattr(llm, "complete", complete)
+    result = ask.generate(payload)
+    assert calls[1]["evidence"] == evidence and result["evidence"] == evidence
+    assert result["status"] == "unverified" and "언제든지" not in ask.customer_text(result)
+    assert result["draft"]["citations"] == ["E1"]
+
+
+def test_quotes_do_not_allow_unresolved_versions_or_wrong_units():
+    with pytest.raises(ValueError, match="시행본"):
+        ask.render(statement(), [{**SOURCE, "versionNote": "시행 전"}])
+    bundle = {"question": "", "evidence": [{**SOURCE, "text": "10일"}, {"key": "E2", "text": "10원"}]}
+    assert ask.check_answer({"action": "answer", "answer": "10원[E1]", "citations": ["E1"]}, bundle)
+
+
+def test_relevant_blocks_keeps_exception_beyond_original_budget():
+    class SourceNote:
+        sources = [("법", f"p{i}") for i in range(6)]
+    index = object.__new__(ask.Index)
+    index.notes = {"노트": SourceNote(), "법": "법"}
+    index.idf = {"해외": 4}
+    index.block = lambda note, anchor, day, cited_by: {
+        "block": anchor, "text": "해외 신고" if anchor == "p5" else "일반 원칙"}
+    blocks = index.relevant_blocks(["노트"], "해외", [], "2026-06-01", 2)
+    assert [b["block"] for b in blocks] == ["p0", "p5"]
+
+
+def test_new_amount_must_follow_from_cited_operands_and_user_hours():
+    source = {**SOURCE, "text": "시간급 10,320원, 적용률 80%"}
+    result = statement(source["text"])
+    line = result["statements"][0]
+    line.update(text="계산하면 61,920원입니다.", formulas=["10320 * 7.5 * 0.8"])
+    assert "61,920원" in ask.render(result, [source], question="하루 7시간 반")["answer"]
+    for formula in ("10320 * 8 * 0.75", "61920", "10320 ** 2"):
+        line["formulas"] = [formula]
+        with pytest.raises(ValueError):
+            ask.render(result, [source], question="하루 7시간 반")
+
+
+@pytest.mark.parametrize("hours", ["7시간 반", "7시간 30분", "7.5시간"])
+def test_calculation_cannot_drop_part_of_the_users_workday(hours):
+    source = {**SOURCE, "text": "시간급 10,000원"}
+    result = statement(source["text"])
+    line = result["statements"][0]
+    line.update(text="75,000원입니다.", formulas=["10000 * 7.5"])
+    assert ask.render(result, [source], question=hours)["citations"] == ["E1"]
+    line.update(text="70,000원입니다.", formulas=["10000 * 7"])
+    with pytest.raises(ValueError, match="산식"):
+        ask.render(result, [source], question=hours)
+
+
+def test_case_date_needs_a_real_date_from_the_question():
+    facts = {"이직일": "2026-01-01", "이직일 원문": "2026년 1월 1일에 퇴사"}
+    assert ask.version_day("2026년 1월 1일에 퇴사했어요.", facts, "2026-02-10") == "2026-01-01"
+    assert ask.version_day("언제 신청해요?", facts, "2026-02-10") == "2026-02-10"
+    assert ask.version_day("2026년 1월 1일에 신청", {**facts, "이직일 원문": "2026년 1월 1일에 신청"},
+                           "2026-02-10") == "2026-02-10"
+
+
+def test_future_effective_date_can_only_use_rules_already_announced():
+    evidence = {**SOURCE, "version": "2027-01-01"}
+    ask.mark_publication(evidence, "20261101", "2026-10-30")
+    with pytest.raises(ValueError, match="시행본"):
+        ask.render(statement(), [evidence])
+    announced = {**SOURCE, "version": "2027-01-01"}
+    ask.mark_publication(announced, "20261001", "2026-10-30")
+    assert ask.render(statement(), [announced])["citations"] == ["E1"]
+
+
+def test_missing_historical_statute_never_substitutes_a_future_or_stale_version(monkeypatch):
+    rows = [{"시행일자": d} for d in ("20250101", "20260101")]
+    monkeypatch.setattr(lawlib, "stored_versions", lambda law: ({"20250101": {}}, rows, {}, {}))
+    for day in ("2024-01-01", "2026-02-01"):
+        assert ask.statute_on("법", "art-1", day, {}) is None
+
+
+def test_historical_rule_uses_the_listed_edition(tmp_path, monkeypatch):
+    folder = tmp_path / "admrul" / "23"
+    folder.mkdir(parents=True)
+    monkeypatch.setattr(lawlib, "CACHE", tmp_path)
+    (folder / "versions.json").write_text(json.dumps({"20240201": {"행정규칙일련번호": "10"}}))
+    (folder / "10-20240201.json").write_text(json.dumps({"AdmRulService": {"조문내용": ["제10조(대상) 당시 원문"]}}))
+    assert ask.rule_on("23", "규정", "art-10", "2026-02-12", {}) == ("2024-02-01", "제10조(대상) 당시 원문")
+    assert ask.rule_on("23", "규정", "art-10", "2023-12-31", {}) is None

@@ -10,14 +10,16 @@ def test_secrets_keep_credentials_and_exclude_public_model_settings(monkeypatch)
         "LAW_OC": "example-owner",
         "NVIDIA_API_KEY": "test-nvidia-credential",
         "GEMINI_API_KEY": "test-gemini-credential",
+        "OPENAI_API_KEY": "test-openai-credential",
         "DATA_GO_KR_SERVICE_KEY": "test-service-credential",
         "UNKNOWN_CREDENTIAL": "test-unknown-credential",
         "NVIDIA_MODEL": "public/example-model",
         "GEMINI_MODEL": "public-example-model",
+        "OPENAI_MODEL": "public-openai-model",
     })
     assert set(L.secrets()) == {
         "OC=example-owner", "test-nvidia-credential", "test-gemini-credential",
-        "test-service-credential", "test-unknown-credential",
+        "test-service-credential", "test-unknown-credential", "test-openai-credential",
     }
 
 # 고용보험 및 산업재해보상보험의 보험료징수 등에 관한 법률 시행령 별표 2, one row in two layouts
