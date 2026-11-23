@@ -259,16 +259,24 @@ class Index:
         ranked = sorted(seed, key=seed.get, reverse=True)
         if not seed:
             return {"question": question, "asOf": as_of, "seeds": [], "notes": [], "blocks": []}
-        rank = self.spread(seed) if use_relations else {**lexical, **seed}
-        # Linked notes always stay, because the model chose them for the question; the graph fills the rest.
-        kept = [n for n in linked if n in self.notes and not self.notes[n].statute][:top]
-        chosen = kept + [n for n in sorted((n for n in rank if not self.notes[n].statute), key=rank.get, reverse=True)
-                         if n not in kept][:top - len(kept)]
+        lexical_rank = {**lexical, **seed}
+        rank = self.spread(seed) if use_relations else lexical_rank
+        # Graph neighbors and strong word matches compete for the same limited evidence slots.
+        rankings = [rank, lexical_rank] if use_relations else [lexical_rank]
+        queues = [iter(sorted((n for n in scores if not self.notes[n].statute), key=scores.get, reverse=True))
+                  for scores in rankings]
+        chosen = linked[:top]
+        while len(chosen) < top and queues:
+            queue = queues.pop(0)
+            name = next((n for n in queue if n not in chosen), None)
+            if name is not None:
+                chosen.append(name)
+                queues.append(queue)
         blocks = self.relevant_blocks(chosen, question, terms, as_of, max_blocks)
         return {
             "question": question, "asOf": as_of, "terms": list(terms), "linked": list(linked),
             "seeds": [{"note": n, "score": round(seed[n], 3)} for n in ranked],
-            "notes": [{"note": n, "type": self.notes[n].type, "score": round(rank[n], 5),
+            "notes": [{"note": n, "type": self.notes[n].type, "score": round(rank.get(n, 0), 5),
                        "seed": n in seed, "via": self.via(n, seed, chosen) if use_relations else []} for n in chosen],
             "blocks": blocks,
         }
@@ -281,13 +289,13 @@ class Index:
         candidates, primary = {}, []
         for name in chosen:
             first = True
-            for target, anchor in self.notes[name].sources:
+            for owner, target, anchor in self.evidence_sources(name, day, question):
                 if not anchor:
                     continue
                 if target in self.notes:
-                    block = self.block(self.notes[target], anchor, day, cited_by=name)
+                    block = self.block(self.notes[target], anchor, day, cited_by=owner)
                 elif (target, anchor) in self.quotations:
-                    block = {**self.quotations[target, anchor], "citedBy": name}
+                    block = {**self.quotations[target, anchor], "citedBy": owner}
                 else:
                     continue
                 key = target, block["block"]
@@ -307,6 +315,34 @@ class Index:
         ranked = sorted(candidates, key=lambda key: candidates[key][0], reverse=True)
         ordered = dict.fromkeys(primary + ranked)
         return [candidates[key][1] for key in list(ordered)[:max(0, limit)]]
+
+    def evidence_sources(self, name, day, question):
+        """Include forms required by a service and the provisions cited by its in-force forms."""
+        note = self.notes[name]
+        for target, anchor in note.sources:
+            yield name, target, anchor
+        documents = [name]
+        normalized = "".join(question.split())
+        labels = [name, *(note.meta.get("aliases") or [])]
+        if any("".join(label.split()) in normalized for label in labels):
+            # A service retrieved as background need not bring every application form into the answer.
+            documents.extend(target for target, _ in links(note.meta.get("hasInputType")))
+        for document in documents:
+            if document not in self.notes:
+                continue
+            for target, _ in links(self.notes[document].meta.get("isDefinedBy")):
+                form = self.notes.get(target)
+                if not form or form.meta.get("typeSubdivision") != "form":
+                    continue
+                # With no local edition on that date, block() flags the anchor for lookup in raw.
+                anchor = next((b for b in form.blocks if re.fullmatch(r"v\d{8}-t", b)), None)
+                if anchor:
+                    yield document, target, anchor
+                # cites belongs to the form, not to a particular edition of a multi-version form.
+                if len(form.versions()) == 1 and form.version_on(day):
+                    for provision, block in links(form.meta.get("cites")):
+                        if block:
+                            yield target, provision, block
 
     def via(self, name, seed, chosen):
         """Relations that tie a note to the seeds or to other chosen notes, for the trace."""
@@ -423,23 +459,19 @@ def context(index, retrieval, facts=None, note_chars=1200, consultation_day=None
         mark_publication(entry, publication, consultation_day)
         evidence.append(entry)
     # A note shows only its current, scheduled and cited versions, so the text in force on an earlier date comes from raw.
-    dated, cache = [], {}
-    for block in retrieval["blocks"]:
-        article = note_article(block["note"])
-        if block.get("versionNote") and article and article not in dated:
-            dated.append(article)
-    for law, key in dated:
-        found = statute_on(law, key, retrieval["asOf"], cache, with_publication=True)
-        note = index.notes.get(article_label(law, key))
-        ident = re.fullmatch(r"admrul-(\d+)-art-\d+(?:-\d+)?", str(note.meta.get("identifier"))) if note else None
-        if not found and ident:
-            found = rule_on(ident[1], law, key, retrieval["asOf"], cache, with_publication=True)
+    cache = {}
+    for name in dict.fromkeys(b["note"] for b in retrieval["blocks"] if b.get("versionNote")):
+        found = historical_unit(index.notes[name], retrieval["asOf"], cache)
         if found:
             version, text, publication = found
-            entry = {"key": f"E{len(evidence) + 1}", "citation": f"{article_label(law, key)} 전문",
+            entry = {"key": f"E{len(evidence) + 1}", "citation": f"{name} 전문",
                      "version": version, "dated": True, "text": text}
             mark_publication(entry, publication, consultation_day)
             evidence.append(entry)
+    # Fixed-width official forms pad each row. Keep column positions and remove only trailing padding.
+    for item in evidence:
+        if "version" in item:
+            item["text"] = re.sub(r"[ \t]+$", "", item["text"], flags=re.M)
     return {"asOf": retrieval["asOf"], "facts": facts or {}, "notes": notes, "evidence": evidence}
 
 
@@ -454,9 +486,18 @@ def note_article(name):
     return match.group(1), f"art-{int(match.group(2))}" + (f"-{int(match.group(3))}" if match.group(3) else "")
 
 
-def article_label(law, key):
-    number, _, branch = key.removeprefix("art-").partition("-")
-    return f"{law} 제{number}조" + (f"의{branch}" if branch else "")
+def historical_unit(note, day, cache):
+    """Resolve the generated unit's stable identifier against the historical source inventory."""
+    identifier = note.meta.get("identifier", "")
+    rule = re.fullmatch(r"admrul-(\d+)(?:-(art-\d+(?:-\d+)?))?", identifier)
+    if rule:
+        name = note.name if not rule[2] else note_article(note.name)[0]
+        return rule_on(rule[1], name, rule[2] or "notice", day, cache, with_publication=True)
+    unit = re.fullmatch(r"law-\d+-((?:art|form|annex)-\d+(?:-\d+)?)", identifier)
+    number = note.meta.get("number")
+    if unit and number and note.name.endswith(" " + number):
+        return statute_on(note.name.removesuffix(" " + number), unit[1], day, cache, with_publication=True)
+    return None
 
 
 def mark_publication(entry, publication, consultation_day):
@@ -518,8 +559,12 @@ def rule_on(rule_id, name, key, day, cache, with_publication=False):
         path = paths[-1]
     if path not in cache:
         service = json.loads(path.read_text(encoding="utf-8"))["AdmRulService"]
-        articles = {L.article_key(m[1], m[2]): text for text in L.as_list(service.get("조문내용"))
-                    if isinstance(text, str) and (m := ADMRUL_ARTICLE.match(text))}
+        if isinstance(service.get("조문내용"), list) or key != "notice":
+            articles = {L.article_key(m[1], m[2]): text for text in L.as_list(service.get("조문내용"))
+                        if isinstance(text, str) and (m := ADMRUL_ARTICLE.match(text))}
+        else:
+            text = L.notice_text(service, L.note_attachments(path, {"AdmRulService": service}))
+            articles = {"notice": text} if text.strip() else {}
         cache[path] = articles, service.get("행정규칙기본정보", {}).get("발령일자")
     articles, publication = cache[path]
     if key not in articles:

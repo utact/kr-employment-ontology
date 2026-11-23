@@ -49,6 +49,9 @@ def test_relation_ablation_keeps_seeds_linked_notes_and_budget(tmp_path):
     assert graph["seeds"] == flat["seeds"]
     assert [n["note"] for n in graph["notes"]] == ["신청 기준", "예외"]
     assert [n["note"] for n in flat["notes"]] == ["신청 기준", "신청 방법"]
+    index.spread = lambda seeds: {"신청 기준": 1, "예외": 0.8}
+    mixed = index.retrieve("신청 기준", **{**settings, "top": 3})
+    assert [n["note"] for n in mixed["notes"]] == ["신청 기준", "예외", "신청 방법"]
 
 
 def test_review_sees_omitted_evidence_and_rejects_a_fabricated_quote(monkeypatch):
@@ -77,6 +80,7 @@ def test_quotes_do_not_allow_unresolved_versions_or_wrong_units():
 
 def test_relevant_blocks_keeps_exception_beyond_original_budget():
     class SourceNote:
+        meta = {}
         sources = [("법", f"p{i}") for i in range(6)]
     index = object.__new__(ask.Index)
     index.notes = {"노트": SourceNote(), "법": "법"}
@@ -85,6 +89,27 @@ def test_relevant_blocks_keeps_exception_beyond_original_budget():
         "block": anchor, "text": "해외 신고" if anchor == "p5" else "일반 원칙"}
     blocks = index.relevant_blocks(["노트"], "해외", [], "2026-06-01", 2)
     assert [b["block"] for b in blocks] == ["p0", "p5"]
+
+
+def test_form_and_its_cited_conditions_enter_the_same_evidence_budget(tmp_path):
+    folder = tmp_path / "wiki"
+    folder.mkdir()
+    def note(name, meta, body=""):
+        (folder / f"{name}.md").write_text(f"---\nstatus: verified\n{meta}\n---\n{body}", encoding="utf8")
+
+    note("서비스", "type: PublicService\nhasInputType: '[[신청서]]'")
+    note("신청서", "type: EvidenceType\nisDefinedBy: '[[서식]]'")
+    note("서식", "type: LegalResourceSubdivision\ntypeSubdivision: form\n"
+         "isRealizedBy: [{firstDateEntryInForce: '2025-07-01'}]\ncites: ['[[절차#^v20250701-p2]]']",
+         "신청서 ^v20250701-t")
+    note("절차", "type: LegalResourceSubdivision\nisRealizedBy: [{firstDateEntryInForce: '2025-07-01'}]",
+         "출국일 전일까지 ^v20250701-p2")
+    idx = ask.Index(tmp_path)
+    current = idx.relevant_blocks(["서비스"], "서비스 출국", [], "2025-07-01", 2)
+    assert [(b["note"], b["citedBy"]) for b in current] == [("서식", "신청서"), ("절차", "서식")]
+    assert not idx.relevant_blocks(["서비스"], "다른 문의", [], "2025-07-01", 2)
+    old = idx.relevant_blocks(["서비스"], "서비스 출국", [], "2025-06-30", 2)
+    assert len(old) == 1 and old[0]["versionNote"]
 
 
 def test_new_amount_must_follow_from_cited_operands_and_user_hours():
@@ -151,3 +176,24 @@ def test_historical_rule_uses_the_listed_edition(tmp_path, monkeypatch):
     (folder / "10-20240201.json").write_text(json.dumps({"AdmRulService": {"조문내용": ["제10조(대상) 당시 원문"]}}))
     assert ask.rule_on("23", "규정", "art-10", "2026-02-12", {}) == ("2024-02-01", "제10조(대상) 당시 원문")
     assert ask.rule_on("23", "규정", "art-10", "2023-12-31", {}) is None
+
+
+def test_old_form_and_notice_are_citable_only_from_their_published_editions(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+
+    day = "2025-03-04"
+    form = SimpleNamespace(name="고용보험법 시행규칙 별지 제97호서식",
+                           meta={"number": "별지 제97호서식", "identifier": "law-006288-form-97"})
+    law = {"기본정보": {"공포일자": "20250201"}, "별표": {"별표단위": {
+        "별표구분": "서식", "별표번호": "000097", "별표내용": ["당시 서식"]}}}
+    monkeypatch.setattr(lawlib, "stored_versions", lambda name: ({"20250223": law}, [{"시행일자": "20250223"}], {}, {}))
+    assert ask.historical_unit(form, day, {}) == ("2025-02-23", "당시 서식", "20250201")
+    folder = tmp_path / "admrul" / "87610"
+    folder.mkdir(parents=True)
+    monkeypatch.setattr(lawlib, "CACHE", tmp_path)
+    (folder / "versions.json").write_text(json.dumps({"20240101": {"행정규칙일련번호": "10"}}))
+    service = {"행정규칙기본정보": {"행정규칙명": "고시", "발령일자": "20240101"}, "조문내용": "당시 고시"}
+    (folder / "10-20240101.json").write_text(json.dumps({"AdmRulService": service}))
+    notice = SimpleNamespace(name="고시", meta={"identifier": "admrul-87610"})
+    assert ask.historical_unit(notice, "2024-10-02", {}) == ("2024-01-01", "당시 고시", "20240101")
+    assert ask.historical_unit(notice, "2023-12-31", {}) is None
