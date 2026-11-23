@@ -1,6 +1,6 @@
 # Korean Employment Ontology
 
-이직한 근로자가 실업급여의 자격, 금액, 신청 절차를 확인할 수 있도록 돕는 챗봇을 만든다. 대한민국 고용보험 법령의 조·항·호와 시행 시점을 요건, 계산 규칙, 절차, 증빙에 연결한 LLM Wiki 방식의 ontology를 근거로 쓴다.
+이직한 근로자가 실업급여의 자격, 금액, 신청 절차를 확인할 수 있도록 돕는 챗봇을 만든다. 대한민국 고용보험 법령의 조·항·호와 시행 시점을 요건, 계산 규칙, 절차, 증빙에 연결한 ontology를 근거로 쓴다. 지식과 출처를 보관하는 Obsidian 폴더를 vault라고 한다.
 
 ## Demo
 
@@ -17,7 +17,7 @@
 
 ## Evaluation
 
-1350 공개 상담 질문으로 같은 모델의 볼트 유무에 따른 응답 차이를 살핀다. development set에서 결론이나 안내가 갈린 사례를 검토하고, test set에서 챗봇과 AI 노동법 상담의 응답 품질을 비교한다. [평가 절차](docs/evaluation-protocol.md) · [역량 질문](docs/competency-questions.md)
+1350 공개 상담 질문으로 같은 모델의 vault 유무에 따른 응답 차이를 살핀다. development set에서 결론이나 안내가 갈린 사례를 검토하고, test set에서 챗봇과 AI 노동법 상담의 응답 품질을 비교한다. [평가 절차](docs/evaluation-protocol.md) · [역량 질문](docs/competency-questions.md)
 
 ## Data and schema
 
@@ -30,20 +30,20 @@
 
 현행·시행예정 원문과, 경과조치 판단에 필요한 과거 버전을 보존한다. [수집 목록](scripts/sources.yaml) · [기준일과 경과 기간](ontology/release.yaml)
 
-공공서비스는 CPSV-AP 3.2.0, 요건·증빙은 CCCEV 2.1.0, 법령과 버전은 ELI 1.4로 모델링한다. 개념 분류는 SKOS, 출처는 PROV-O로 표현하며, 클래스와 속성은 [LinkML 스키마](ontology/schema.yaml)에 정의한다. [스키마 문서](ontology/schema.md)
+공공서비스는 CPSV-AP 3.2.0, 요건·증빙은 CCCEV 2.1.0, 법령과 버전은 ELI 1.4로 모델링한다. 개념 분류는 SKOS, 출처는 PROV-O로 표현하며, class와 property는 [LinkML schema](ontology/schema.yaml)에 정의한다. [schema 문서](ontology/schema.md)
 
 ## Architecture
 
 ```mermaid
 flowchart LR
     A["원문 · raw/"] -->|조문 생성·지식 작성| B["지식과 인용 · wiki/"]
-    S["LinkML 스키마"] -.->|구조 정의| B
+    S["LinkML schema"] -.->|구조 정의| B
     B --> C["RDF 변환·검증"]
     B --> D["질문별 근거 검색"]
     D --> E["답변 생성·인용 검사"]
 ```
 
-원문·지식·스키마를 나눈 [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 방식이다. 법령 조문 노트는 스크립트가 원문에서 생성하고, LLM은 원문을 인용해 지식과 관계를 쓰며, 별도 검증 에이전트가 대조한다. [운영 규칙](AGENTS.md) · [구현 구조](docs/architecture.md)
+원문·지식·schema를 나눈 [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 방식이다. 법령 조문 노트는 스크립트가 원문에서 생성하고, LLM은 원문을 인용해 지식과 관계를 쓰며, 별도 검증 agent가 대조한다. [운영 규칙](AGENTS.md) · [구현 구조](docs/architecture.md)
 
 ## Quick start
 

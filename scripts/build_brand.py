@@ -122,7 +122,7 @@ def render(data):
     }
     (ASSETS/"brand-population.json").write_text(json.dumps(data,ensure_ascii=False,separators=(",",":"))+"\n",encoding="utf-8")
     svg = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 128" fill="none">',
-           '<title>이직·실업급여 온톨로지</title>',
+           '<title>이직·실업급여 ontology</title>',
            '<desc>2020년 인구 밀도를 노드의 크기와 밝기로 표현한 한반도. WorldPop, University of Southampton, CC BY 4.0. 원본 1km 인구 추정치를 20km 구간으로 합산하고 명암을 로그 변환함.</desc>',
            '<metadata>WorldPop Global2 R2025A v1; Bondarenko et al. (2025); https://doi.org/10.5258/SOTON/WP00840 ; https://creativecommons.org/licenses/by/4.0/ ; aggregation: brand-population.json</metadata>',
            '<g fill="#84bca6" opacity=".08" fill-rule="evenodd">']

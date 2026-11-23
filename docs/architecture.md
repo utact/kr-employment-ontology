@@ -6,13 +6,13 @@
 | --- | --- | --- |
 | 원문 수집 | 법제처 API 응답·첨부파일·시행 버전 저장과 수집 결과 검사 | [collect.py](../scripts/collect.py), [check_raw.py](../scripts/check_raw.py) |
 | 조문 생성 | 법령·조문 노트, 조·항·호 블록, 버전, 인용·위임 관계 생성 | [statutes.py](../scripts/statutes.py) |
-| 스키마 | LinkML 클래스·속성과 표준 IRI | [schema.yaml](../ontology/schema.yaml) |
-| RDF 변환·검증 | 위키를 RDF로 변환하고 LinkML·SHACL로 검사 | [vault.py](../scripts/vault.py) |
+| schema | LinkML class·property과 표준 IRI | [schema.yaml](../ontology/schema.yaml) |
+| RDF 변환·검증 | wiki를 RDF로 변환하고 LinkML·SHACL로 검사 | [vault.py](../scripts/vault.py) |
 | 인용 검사 | 인용문·숫자·날짜·관계·구조 검사 | [lint.py](../scripts/lint.py) |
-| 검증 원장 | 검증 에이전트용 맥락 구성, 내용·인용 해시 기록 | [verify.py](../scripts/verify.py) |
+| 검증 원장 | 검증 agent에 노트와 인용 근거 제공, 노트와 근거의 hash 기록 | [verify.py](../scripts/verify.py) |
 | 역량 질문 | SPARQL 질의로 기대 답의 근거 연결 확인 | [cq.py](../scripts/cq.py), [competency-questions.md](competency-questions.md) |
 
-법령 조문은 스크립트가 생성하고, 요건·해석·관계는 LLM이 원문을 인용해 쓴다. 별도 검증 에이전트가 각 문장을 인용 블록과 대조한 뒤 `verified`로 바꾼다. `verified` 노트에도 공개 출처로 풀리지 않는 질문은 question callout으로 남는다.
+법령 조문은 스크립트가 생성하고, 요건·해석·관계는 LLM이 원문을 인용해 쓴다. 별도 검증 agent가 각 문장을 인용 블록과 대조한 뒤 `verified`로 바꾼다. `verified` 노트에도 공개 출처로 풀리지 않는 질문은 question callout으로 남는다.
 
 ## Question answering
 
@@ -23,14 +23,14 @@
 3. 질문 원문에서 이직일을 확인하면 이직일로, 그 외에는 상담 기준일로 조문 시행본을 조회한다. 노트에 해당 버전이 없으면 수집 원문에서 찾는다.
 4. 모델이 근거 번호를 달아 답하고, 답의 숫자를 근거 원문과 대조한다.
 
-[llm.py](../scripts/llm.py)는 모델 호출을 맡는다. [bench_qa.py](../scripts/bench_qa.py)는 볼트 유무의 답을 같은 질문으로 비교하고, 외부 상담 서비스와 대조할 입력을 고정한다. [평가 절차](evaluation-protocol.md)
+[llm.py](../scripts/llm.py)는 모델 호출을 맡는다. [bench_qa.py](../scripts/bench_qa.py)는 vault 유무의 답을 같은 질문으로 비교하고, 외부 상담 서비스와 대조할 입력을 고정한다. [평가 절차](evaluation-protocol.md)
 
 ## Demo
 
-[export_view.py](../scripts/export_view.py)가 위키를 그래프 JSON으로 내보내고, 화면은 이직일에 따라 구직급여 상한액의 규정과 계산을 고른다. 서버의 [model.py](../view/model.py)가 같은 계산을 하고, 계산 결과와 법령 발췌를 언어 모델에 보내 설명을 받는다. 설명의 금액과 근거 ID를 검사한 뒤 표시한다. 그래프의 단계 이동은 이 규칙 실행 순서이며, 모델의 추론 과정이 아니다. [화면 설명](../view/README.md)
+[export_view.py](../scripts/export_view.py)가 wiki를 그래프 JSON으로 내보내고, 화면은 이직일에 따라 구직급여 상한액의 규정과 계산을 고른다. 서버의 [model.py](../view/model.py)가 같은 계산을 하고, 계산 결과와 법령 발췌를 언어 모델에 보내 설명을 받는다. 설명의 금액과 근거 ID를 검사한 뒤 표시한다. 그래프의 단계 이동은 이 규칙 실행 순서이며, 모델의 추론 과정이 아니다. [화면 설명](../view/README.md)
 
 ## Validation
 
-[vault.py](../scripts/vault.py)는 LinkML, 자체 SHACL, CPSV-AP·CCCEV 공식 SHACL을 검사한다. 법령이 정한 당사자 유형은 특정 개인·기관이 아니므로 `Participation.hasParticipant` 누락을 문서화한 예외로 둔다. [스키마의 적용 예외](../ontology/schema.md#classes)
+[vault.py](../scripts/vault.py)는 LinkML, 자체 SHACL, CPSV-AP·CCCEV 공식 SHACL을 검사한다. 법령이 정한 당사자 유형은 특정 개인·기관이 아니므로 `Participation.hasParticipant` 누락을 문서화한 예외로 둔다. [schema의 적용 예외](../ontology/schema.md#classes)
 
 역량 질문 검사는 지정한 범위의 근거 연결을 확인할 뿐, 자연어 질문에 대한 답변 정확도를 재지 않는다. 답변 정확도는 [평가 절차](evaluation-protocol.md)로 따로 잰다.

@@ -212,8 +212,8 @@ class Index:
         import llm
 
         system = (
-            "너는 한국 고용보험 법령 온톨로지의 검색 단계다. 질문에 답하지 않는다. "
-            "catalog는 위키 노트 목록이며 각 줄은 '노트 이름 | class | 정의'다. "
+            "너는 한국 고용보험 법령 ontology의 검색 단계다. 질문에 답하지 않는다. "
+            "catalog는 wiki 노트 목록이며 각 줄은 '노트 이름 | class | 정의'다. "
             "질문의 일상어를 법령 용어로 바꾸고, 답에 필요한 조건·예외·계산·절차를 담은 노트를 catalog에서 고른다. "
             "질문이 직접 묻는 것뿐 아니라 판단에 필요한 요건과 예외 노트도 고른다. "
             "notes에는 catalog의 노트 이름을 그대로 적는다. 질문에 없는 사실은 facts에 넣지 않는다. "
@@ -311,7 +311,7 @@ class Index:
         entry["citedVersion"] = cited
         entry["versionOnDate"] = in_force
         if in_force is None:
-            entry["versionNote"] = "볼트가 기준일에 시행 중인 버전을 보여 주지 않는다"
+            entry["versionNote"] = "vault에 기준일 시행본이 없다"
         elif in_force != cited:
             other = f"v{in_force.replace('-', '')}-{match.group(4)}"
             entry["versionNote"] = "기준일의 버전이 인용한 버전과 다르다"

@@ -8,7 +8,7 @@
 uv run python -X utf8 view/serve.py
 ```
 
-<http://127.0.0.1:8765/view/>를 연다. 서버는 `127.0.0.1`에서 `view/`만 제공한다. 위키가 바뀌면 `uv run python -X utf8 scripts/export_view.py`로 `data/vault.json`을 갱신한다.
+<http://127.0.0.1:8765/view/>를 연다. 서버는 `127.0.0.1`에서 `view/`만 제공한다. wiki가 바뀌면 `uv run python -X utf8 scripts/export_view.py`로 `data/vault.json`을 갱신한다.
 
 ## Model configuration
 

@@ -8,7 +8,7 @@ export function runScenario(data, separationDate, clock = () => performance.now(
   }
   const config = data.scenario;
   if (separationDate < config.minDate || separationDate > config.maxDate) {
-    throw new Error(`이 데모는 ${config.minDate}부터 볼트 기준일 ${config.maxDate}까지의 이직일을 다룹니다.`);
+    throw new Error(`이 데모는 ${config.minDate}부터 vault 기준일 ${config.maxDate}까지의 이직일을 다룹니다.`);
   }
   const byId = new Map(data.nodes.map(node => [node.id, node]));
   const visited = new Set();
@@ -16,7 +16,7 @@ export function runScenario(data, separationDate, clock = () => performance.now(
   const s = data.scene;
   function record(title, detail, ids, evidenceKeys = [], extra = {}) {
     for (const id of ids) {
-      if (!byId.has(id)) throw new Error(`볼트에서 근거 노드를 찾지 못했습니다: ${id}`);
+      if (!byId.has(id)) throw new Error(`vault에서 근거 노드를 찾지 못했습니다: ${id}`);
       visited.add(id);
     }
     for (const key of evidenceKeys) {

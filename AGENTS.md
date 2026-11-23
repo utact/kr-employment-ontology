@@ -334,7 +334,7 @@ Obsidian's graph view draws links without their kind, so `views/` shows the onto
 - Use capitals only where they carry meaning.
   - In English text, use sentence case for headings, list items and table cells.
   - In Korean prose, keep English common nouns lowercase.
-  - Keep the spelling of proper nouns, such as Obsidian, Markdown and LLM Wiki, and of acronyms, such as API, IRI and RDF.
+  - Keep the spelling of proper nouns, such as Obsidian and Markdown, and of acronyms, such as API, IRI and RDF. Preserve the original capitalization of cited titles, such as LLM Wiki.
 - Case identifiers by kind.
   - Classes: PascalCase
   - Properties: camelCase

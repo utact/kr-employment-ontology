@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1016">
-  <title>이직·실업급여 온톨로지</title>
-  <meta name="description" content="이직·실업급여의 요건, 급여 계산, 절차와 의무를 적용 시점별 법령 근거에 연결한 온톨로지.">
+  <title>이직·실업급여 ontology</title>
+  <meta name="description" content="이직·실업급여의 요건, 급여 계산, 절차와 의무를 적용 시점별 법령 근거에 연결한 ontology.">
   <script>
     document.documentElement.classList.add('is-booting');
     window.startupFallbackTimer=setTimeout(()=>{
@@ -27,12 +27,12 @@
   <div class="startup-overlay" id="startup-overlay" aria-label="화면 준비" hidden>
     <canvas id="startup-canvas" aria-hidden="true"></canvas>
     <img class="startup-fallback" src="./assets/brand-mark.svg" alt="" aria-hidden="true">
-    <div class="startup-caption"><strong>이직·실업급여</strong><span role="status">법령 온톨로지</span></div>
+    <div class="startup-caption"><strong>이직·실업급여</strong><span role="status">법령 ontology</span></div>
     <button id="skip-intro">건너뛰기 <span aria-hidden="true">↗</span></button>
   </div>
   <header class="topbar">
     <a class="brand" href="./" aria-label="이직·실업급여 처음으로"><img src="./assets/brand-mark.svg" alt="" title="2020년 인구 밀도 · WorldPop"><b>이직·실업급여</b></a>
-    <span class="page-name">법령 온톨로지</span>
+    <span class="page-name">법령 ontology</span>
     <span id="as-of" class="snapshot"></span>
     <button id="about-button" class="text-button" aria-haspopup="dialog">소개</button>
   </header>
@@ -69,7 +69,7 @@
         <div class="graph-toolbar"><label class="search-field"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input type="search" id="node-search" placeholder="노드 검색" aria-label="노드 검색" autocomplete="off"></label><button id="overview-button" class="small-button">전체 보기</button></div>
         <div id="search-results" class="search-results" hidden></div>
         <div class="graph-stage" id="graph-stage">
-          <canvas id="graph-canvas" aria-label="볼트 그래프. 노드에 마우스를 올리면 연결 관계가 표시됩니다."></canvas>
+          <canvas id="graph-canvas" aria-label="vault 그래프. 노드에 마우스를 올리면 연결 관계가 표시됩니다."></canvas>
           <div class="graph-loading" id="graph-loading"><span class="loader"></span>불러오는 중</div>
           <div class="graph-context" id="graph-context" hidden><span id="graph-mode"></span><p id="graph-detail"></p></div>
           <div class="graph-tooltip" id="graph-tooltip" role="tooltip" hidden></div>
@@ -132,7 +132,7 @@
   <dialog id="about-dialog" aria-labelledby="about-title" aria-describedby="about-description">
     <header class="about-header">
       <img src="./assets/brand-mark.svg" alt="">
-      <div><h2 id="about-title">이직·실업급여</h2><p id="about-description">법령 온톨로지</p></div>
+      <div><h2 id="about-title">이직·실업급여</h2><p id="about-description">법령 ontology</p></div>
       <button id="close-about" class="dialog-close" aria-label="소개 닫기">×</button>
     </header>
     <div class="about-tabs" role="tablist" aria-label="소개 항목">
@@ -158,14 +158,14 @@
           <dt>판례·해석례</dt><dd><a href="https://open.law.go.kr/LSO/index.html" target="_blank" rel="noopener">법제처 국가법령정보 공동활용 ↗</a><span>대법원 판례 · 법제처 법령해석례</span></dd>
           <dt>고용24 안내</dt><dd><a href="https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000254&amp;systCnntId=&amp;systId=SI00000411" target="_blank" rel="noopener">실업급여(상용직) ↗</a><div class="source-links"><a href="https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000255&amp;systCnntId=&amp;systId=SI00000387" target="_blank" rel="noopener">실업급여(일용직)</a><a href="https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000260&amp;systCnntId=&amp;systId=SI00000343" target="_blank" rel="noopener">이직확인서</a></div></dd>
         </dl>
-        <p class="about-note">법령·행정규칙·판례·해석례 수집: <a href="https://open.law.go.kr/LSO/index.html" target="_blank" rel="noopener">법제처 공동활용 API ↗</a><br>볼트에는 시행일별 원문과 인용 위치를 보관. 위 링크는 각 출처의 공식 페이지로 연결.</p>
+        <p class="about-note">법령·행정규칙·판례·해석례 수집: <a href="https://open.law.go.kr/LSO/index.html" target="_blank" rel="noopener">법제처 공동활용 API ↗</a><br>vault에는 시행일별 원문과 인용 위치를 보관. 위 링크는 각 출처의 공식 페이지로 연결.</p>
       </section>
       <section id="about-example" role="tabpanel" aria-labelledby="about-example-tab" tabindex="0" hidden>
         <p class="about-example-title"><span>예제 01</span>구직급여 상한액</p>
         <p class="about-example-intro">이직일별 적용 법령 및 구직급여 상한액 비교</p>
         <dl class="about-facts">
           <dt>비교 서비스</dt><dd><ul class="about-items"><li><a href="https://ai.moel.go.kr/llc/labor-law-chat" target="_blank" rel="noopener">AI 노동법 상담 ↗</a> · 고용노동부·한국공인노무사회</li><li>2026.11.09 수집한 실제 응답 원문 표시</li></ul></dd>
-          <dt>지식 그래프</dt><dd><ul class="about-items"><li>볼트의 실제 노트와 관계 표시</li><li>적용일·법령 버전·계산 순서의 탐색 기록</li></ul></dd>
+          <dt>지식 그래프</dt><dd><ul class="about-items"><li>vault의 실제 노트와 관계 표시</li><li>적용일·법령 버전·계산 순서의 탐색 기록</li></ul></dd>
           <dt>답변 생성</dt><dd><ul class="about-items"><li>선택한 날짜의 계산 결과와 법령 원문 사용</li><li>NVIDIA 모델의 실시간 답변 생성</li></ul></dd>
           <dt>측정 범위</dt><dd><ul class="about-items"><li>AI 노동법 상담: 질문 전송부터 마지막 글자 표시까지 관측</li><li>모델 답변: 공급자 요청부터 응답 완료까지 측정</li><li>상담 응답은 질문별 1회 측정 · 캐시 사용 여부 미확인</li></ul></dd>
         </dl>
