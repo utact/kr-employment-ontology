@@ -1,16 +1,12 @@
 # Korean Employment Ontology
 
-A source-traceable ontology of Korean employment law, starting with worker separation and unemployment benefits.
-
-근로자의 이직부터 실업급여 지급까지 요건, 계산 규칙, 절차, 증빙을 법령의 조·항·호와 시행 시점에 연결한다. 사업주의 신고 의무, 피보험자격, 취업촉진 수당과 연장급여도 다룬다. 이 온톨로지를 근거로 노동법 상담 질문에 답하는 챗봇을 함께 만든다.
+이직한 근로자가 실업급여의 자격, 금액, 신청 절차를 확인할 수 있도록 돕는 챗봇을 만든다. 대한민국 고용보험 법령의 조·항·호와 시행 시점을 요건, 계산 규칙, 절차, 증빙에 연결한 LLM Wiki 방식의 ontology를 근거로 쓴다.
 
 ## Demo
 
 <https://github.com/user-attachments/assets/2c39a92c-2c16-4051-8402-d00298c80bdd>
 
-일용근로자의 구직급여 하루 상한액을 묻는 같은 질문에 대해, [고용노동부 AI 노동법 상담](https://ai.moel.go.kr/)의 응답과 적용 규정으로 계산한 결과를 비교한다.
-
-> 2026년 9월 30일 퇴사한 일용근로자입니다. 하루 8시간 일했는데 구직급여는 하루 최대 얼마인가요?
+하루 8시간 일한 일용근로자의 구직급여 일액 상한을 이직일만 바꿔 [고용노동부 AI 노동법 상담](https://ai.moel.go.kr/)에 물었다.
 
 | 이직일 | AI 노동법 상담 응답 | 적용 규정에 따른 상한액 |
 | --- | ---: | ---: |
@@ -18,6 +14,10 @@ A source-traceable ontology of Korean employment law, starting with worker separ
 | 2025-12-31 | 66,000원 | 66,000원 |
 
 2026-01-01부터 고용보험법 시행령 제68조제1항의 기초일액 상한은 113,500원이고, 법 제46조제1항제1호의 지급 비율 60%를 곱하면 68,100원이다. 부칙 제35934호 제4조는 시행 전 이직자에게 종전 규정을 적용한다. [1350 상담 안내](https://1350.moel.go.kr/rtmview.do?id=1000324861)도 두 상한액과 적용 시점을 밝힌다. 응답은 2026-11-09에 수집했고, 두 질문으로 서비스 전체의 정확도를 평가하지 않는다. [수집 기록](view/README.md#비교-응답)
+
+## Evaluation
+
+1350 공개 상담 질문으로 같은 모델의 볼트 유무에 따른 응답 차이를 살핀다. 개발용에서 결론이나 안내가 갈린 사례를 검토하고, 별도 평가용 사례에서 챗봇과 AI 노동법 상담의 응답 품질을 비교한다. [평가 절차](docs/free-question-benchmark.md) · [역량 질문](docs/competency-questions.md)
 
 ## Data and schema
 
@@ -55,7 +55,7 @@ cd kr-employment-ontology
 uv sync --frozen
 ```
 
-질문에 답하려면 `.env.example`을 `.env`로 복사하고 언어 모델 설정을 채운다. `--as-of`는 상담 기준일이며, 그날 시행 중인 조문을 근거로 쓴다.
+질문에 답하려면 `.env.example`을 `.env`로 복사하고 언어 모델 설정을 채운다. `--as-of`로 상담 기준일을 지정한다. [시행본 선택](docs/implementation.md#챗봇)
 
 ```sh
 uv run python -X utf8 scripts/ask.py answer "2025년 12월 31일에 퇴사한 일용근로자의 구직급여 하루 상한액은?" --as-of 2026-01-15 --provider nvidia --format text
