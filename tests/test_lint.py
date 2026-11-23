@@ -81,14 +81,9 @@ DEFECTS = {
     "statute note differs from its ledger entry": ((ARTICLE, "급여의 기초가 되는 임금일액)의 법령 노트다", "급여의 기초가 되는 임금일액)의 노트다"),),
     "verified note without a matching ledger entry": ((CAP, "status: draft", "status: verified"),),
     "reviewed note without reviewedBy": ((CAP, "status: draft", "status: reviewed"),),
-    "duplicate note name": (("synthetic/기초일액.md", None, "---\ntype: InformationConcept\nidentifier: synthetic-base\nsynthetic: true\n---\n"),),
+    "duplicate note name": (("raw/기초일액.md", None, "---\ntype: InformationConcept\nidentifier: duplicate-base\n---\n"),),
     "identifier base-daily-wage also in": (("wiki/InformationConcept/시험 개념.md", None, NOTE.format(body="시험 개념은 구직급여의 산정 기초가 되는 임금일액이다.[^1]").replace("test-concept", "base-daily-wage")),),
     "alias 기초일액 is another note's name": (("wiki/InformationConcept/평균임금.md", "definition:", "aliases:\n- 기초일액\ndefinition:"),),
-    "links synthetic note": (("synthetic/합성 이직자.md", None, "---\ntype: InformationConcept\nidentifier: synthetic-person\nsynthetic: true\n---\n"),
-                             (CAP, "## 근거", "[[합성 이직자]]\n\n## 근거")),
-    "embeds synthetic note": (("synthetic/합성 이직자.md", None, "---\ntype: InformationConcept\nidentifier: synthetic-person\nsynthetic: true\n---\n"),
-                              (CAP, "## 근거", "![[합성 이직자]]\n\n## 근거")),
-    "links synthetic data": ((CAP, "## 근거", "[합성 데이터](../../synthetic/person.md)\n\n## 근거"),),
     "has no citation label": ((CAP, "[^1]: [[고용보험법 시행령 제68조#^v20260101-p1|고용보험법 시행령 제68조제1항]]", "[^1]: [[고용보험법 시행령 제68조#^v20260101-p1]]"),),
     "names the 단서, but the block has no 단서": ((CAP, "|고용보험법 시행령 제68조제1항]]", "|고용보험법 시행령 제68조제1항 단서]]"),),
     "quote statutory text in “ ”": ((CAP, "## 근거", "기초일액은 ‘해당 임금일액’이다.[^1]\n\n## 근거"),),
@@ -118,9 +113,6 @@ DEFECTS = {
         (CAP, "기초일액은 11만3500원을", "기초일액은 [[기초일액|11만4500원]]을"),),
     "broken link: [[없는 노트#근거]]": ((CAP, "## 근거", "[[없는 노트#근거]]\n\n## 근거"),),
     "link to a heading the note lacks: [[기초일액#없는 절]]": ((CAP, "## 근거", "[[기초일액#없는 절]]\n\n## 근거"),),
-    "links synthetic note [[합성 이직자]]": (("synthetic/합성 이직자.md", None, "---\ntype: InformationConcept\nidentifier: synthetic-person\nsynthetic: true\n---\n"),
-                                       (CAP, "## 근거", "[[합성 이직자#요약]]\n\n## 근거")),
-    "links synthetic data: ../../synthetic/합성 이직자.md": ((CAP, "## 근거", "[합성](<../../synthetic/합성 이직자.md>)\n\n## 근거"),),
     "undeclared block: [[고용보험법 시행령 제68조#^V20260101-p1]]": ((CAP, "## 근거", "[[고용보험법 시행령 제68조#^V20260101-p1]]\n\n## 근거"),),
     "without an appliesWhen date condition: [[고용보험법 제45조#^v20280101-p1]]": (
         (BASE_RULE, "- '[[2028-01-01 전 이직]]'", "- '[[2026년 시간급 최저임금]]'"),
@@ -144,8 +136,6 @@ DEFECTS = {
     "in words: 열흘": ((CAP, "## 근거", "신고는 열흘 안에 한다.[^1]\n\n## 근거"),),
     "in words: 두 번": ((CAP, "## 근거", "두 번째 신고다.[^1]\n\n## 근거"),),
     "sentence without a source: 기초일액에는 상한이 없다": ((CAP, "## 근거", "> [!info] 기초일액에는 상한이 없다\n\n## 근거"),),
-    "links synthetic data: 합성 이직자.md": (("synthetic/합성 이직자.md", None, "---\ntype: InformationConcept\nidentifier: synthetic-person\nsynthetic: true\n---\n"),
-                                        (CAP, "## 근거", "[합성](합성%20이직자.md)\n\n## 근거")),
     "definition: write numbers in Arabic numerals": ((CAP, "definition: 2026-01-01 이후 이직한 사람의 기초일액 상한", "definition: 2026-01-01 이후 이직한 사람의 기초일액 상한으로 두 번 바뀐 금액"),),
 }
 
@@ -398,33 +388,3 @@ def test_criterion_on_a_date_may_cite_versions_in_its_dates(tmp_path, test, prob
     assert versions == [] if problem is None else any(problem in p for p in versions), versions
 
 
-DECISION = """# 판단 기록
-
-## 2026-10-27 deadline-reading
-
-- 판단: “사유가 발생한 날을 퇴직일로 본다.” ^deadline-reading-1
-"""
-DEADLINE_SENTENCE = "다음 달 15일까지 신고해야 한다.[^1]"
-DEADLINE_FOOTNOTE = "[^1]: [[고용보험법 시행령 제7조#^v20210701-p1|고용보험법 시행령 제7조제1항]]"
-
-
-def test_decision_footnote_needs_no_source(tmp_path):
-    """A footnote may add a decision of the owner to a statute block, and the decision stays out of source."""
-    problems = run(tmp_path, ("docs/decisions.md", None, DECISION),
-                   (DEADLINE, DEADLINE_SENTENCE, "다음 달 15일까지 신고해야 한다.[^1][^2]"),
-                   (DEADLINE, DEADLINE_FOOTNOTE, DEADLINE_FOOTNOTE + "\n[^2]: [[decisions#^deadline-reading-1|판단 기록 deadline-reading]]"))
-    assert problems == []
-
-
-def test_decision_alone_is_no_source(tmp_path):
-    problems = run(tmp_path, ("docs/decisions.md", None, DECISION),
-                   (DEADLINE, DEADLINE_SENTENCE, "다음 달 15일까지 신고해야 한다.[^1] 이 노트는 그날을 퇴직일로 본다.[^2]"),
-                   (DEADLINE, DEADLINE_FOOTNOTE, DEADLINE_FOOTNOTE + "\n[^2]: [[decisions#^deadline-reading-1|판단 기록 deadline-reading]]"))
-    assert any("sentence without a source: its footnotes cite no statute block" in p for p in problems)
-
-
-def test_undeclared_decision_block_is_reported(tmp_path):
-    problems = run(tmp_path, ("docs/decisions.md", None, DECISION),
-                   (DEADLINE, DEADLINE_SENTENCE, "다음 달 15일까지 신고해야 한다.[^1][^2]"),
-                   (DEADLINE, DEADLINE_FOOTNOTE, DEADLINE_FOOTNOTE + "\n[^2]: [[decisions#^deadline-reading-2|판단 기록 deadline-reading]]"))
-    assert any("undeclared block: [[decisions#^deadline-reading-2]]" in p for p in problems)

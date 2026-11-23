@@ -20,13 +20,11 @@ The vault has three layers: raw sources that are never edited, the wiki that the
 | `ontology/cq/` | — | SPARQL queries of the competency questions |
 | `views/` | — | Obsidian canvases and bases that show the wiki |
 | `.obsidian/` | — | Obsidian settings, without the workspace files |
-| `synthetic/` | — | Synthetic data |
 | `scripts/` | — | Collection, generation and validation scripts |
 | `tests/` | — | Fixture notes and tests for the scripts |
 | `.cache/` | — | Local cache of uncited raw versions, ignored by Git |
-| `docs/` | — | Human-facing documents such as the decision record |
+| `docs/` | — | Competency questions, scenarios and the free-question benchmark |
 | `index.md` | — | Notes by class |
-| `log.md` | — | Operation log |
 
 ## Reference date
 
@@ -85,7 +83,7 @@ The vault has three layers: raw sources that are never edited, the wiki that the
 - List the 부칙 articles that govern the window with `uv run python -X utf8 scripts/transitional.py`.
   - It reads the 부칙 of the current and scheduled versions, whose titles contain 경과조치, 적용례, 특례 or 유효기간, of every promulgation with a 시행일자 on or after the first day of the window.
   - It shows the units each article names: articles, 항, 호, 별표, 별지 서식 and 같은 조, but not the articles of the 부칙 itself, such as "부칙 제4조부터 제7조까지".
-  - List those that name no unit for review in `log.md`.
+  - Review those that name no unit.
 - Walk back the version list as far as needed to date the text of each generated unit, as described in Statute notes.
   - Commit only the versions that the wiki cites or that are current or scheduled.
   - Keep the others in the local cache, `.cache/law/` and `.cache/admrul/`, which Git ignores.
@@ -111,14 +109,6 @@ The vault has three layers: raw sources that are never edited, the wiki that the
   - On re-collection, write a new note with the new retrieval time.
   - Skip it if its `sha256` equals that of the previous retrieval.
 
-## Synthetic data
-
-- Keep synthetic data only in `synthetic/`.
-  - Synthetic data stands in for non-public information.
-  - Set `synthetic: true` in its frontmatter.
-- Never cite or link synthetic notes from `wiki/` notes.
-  - Synthetic notes may link `wiki/` notes.
-
 ## Statute notes
 
 - Generate `LegalResource` and `LegalResourceSubdivision` notes from raw sources with `uv run python -X utf8 scripts/statutes.py`.
@@ -127,7 +117,7 @@ The vault has three layers: raw sources that are never edited, the wiki that the
   - Generate the units that wiki notes or competency questions cite, their parent units, and the units those units cite directly.
   - Keep generating every unit that already has a statute note, so that no note goes stale.
   - Commit `scripts/` first: `statutes.py` writes notes only from a committed generator, so that the ledger names it.
-  - It prints `REVIEW` lines for dates that fail the check below, moved or reused article numbers within the versions a note shows, cited versions without a raw note, references not counted as delegations, delegations the 위임조문 data does not list, units kept only because their note exists, images without text, glyphs lost as "?" and form text that stands side by side without frames. Record them in `log.md`.
+  - It prints `REVIEW` lines for dates that fail the check below, moved or reused article numbers within the versions a note shows, cited versions without a raw note, references not counted as delegations, delegations the 위임조문 data does not list, units kept only because their note exists, images without text, glyphs lost as "?" and form text that stands side by side without frames. Resolve them before committing the notes.
   - `--check` lists the notes that differ from a fresh generation or from the ledger. It changes and fetches nothing, and stops when the cache lacks a version it needs.
   - `--versions "<unit>"` lists the versions of a unit in the transitional window with their block IDs, for citing an earlier version.
 - Statute notes follow article numbers.
@@ -271,7 +261,6 @@ decisionTable:
   - Items of a 별표 or 서식: link the block, and name the item in the label, as in `고용보험법 시행령 별표 2 제1호나목`
   - 항 and 호 of a 행정규칙 article: link the block, and name them in the label, as in `실업인정 및 재취업지원규정 제12조제2항제1호`
   - 판례, 법령해석례 and 고용24 guides: a quotation block of the raw note, labelled with the name of the source, as in `[^2]: [[법령해석례 26-0321 20261019T2045#^q1|법제처 법령해석례 26-0321]]` and `대법원 2015두44165 판결`
-  - Decisions of the human owner: a block of `docs/decisions.md`, next to the blocks the reading rests on, as described in Decisions
   - A footnote to a whole raw note rests only on its frontmatter and the basic information of its response, such as 시행일자 and 공포번호.
 - Quote statutory text verbatim inside “ ” (U+201C and U+201D), followed directly by its footnote.
   - Statute text itself uses ASCII double quotes, as in `[이하 "기초일액(基礎日額)"이라 한다]`.
@@ -394,7 +383,6 @@ Notes written by the LLM move through three statuses in order.
 
 1. `draft`: created or edited by the LLM
    - Any edit, or any change in a cited block, returns a note to `draft`.
-   - Log the reason in `log.md`.
 2. `verified`: checked by a separate agent
    - The verifier did not write the note and works in a fresh context.
    - Run it as a subagent with model `opus`.
@@ -403,11 +391,11 @@ Notes written by the LLM move through three statuses in order.
      - When unsure, use `xhigh`, because a wrong pass enters the ledger and later notes build on it.
    - Give it the note, the cited blocks and the notes that link to or from the note, which `uv run python -X utf8 scripts/verify.py context <note>...` prints.
    - It compares every factual sentence with the cited blocks, checks schema conformance and looks for contradictions with the linked notes.
-   - On any mismatch, the note stays `draft` and the required fixes go to `log.md`.
+   - On any mismatch, the note stays `draft` until the fixes pass a new verification.
 3. `reviewed`: approved by the human owner
    - Record `reviewedBy` and `lastReviewed`.
    - The LLM never sets `reviewed`, `reviewedBy` or `lastReviewed`.
-   - `.claude/settings.json` runs `scripts/review_guard.py` before every Claude Code edit and shell command. It blocks writing these into notes of `wiki/` and `synthetic/`, and any edit of a reviewed note that does not set its status to draft.
+   - `.claude/settings.json` runs `scripts/review_guard.py` before every Claude Code edit and shell command. It blocks writing these into notes of `wiki/`, and any edit of a reviewed note that does not set its status to draft.
    - Its shell check reads only the command text, so a script that writes them from its own code is not stopped.
 
 - Statute notes generated by script start as `verified`, because the script checks them against the raw source.
@@ -430,7 +418,7 @@ Ingest reflects a source in the wiki.
 3. Find related notes through `index.md`.
 4. Create or edit notes.
    - If a needed class or property is missing, update the schema first.
-5. Update `index.md` with `uv run python -X utf8 scripts/index.py`, and append to `log.md`.
+5. Update `index.md` with `uv run python -X utf8 scripts/index.py`.
 
 ### Query
 
@@ -474,8 +462,6 @@ Lint checks the wiki for these problems with `uv run python -X utf8 scripts/lint
 - Secrets
   - `.env` values in tracked files
   - Credential parameters in raw URLs
-- Synthetic data
-  - Links, embeds and Markdown links from `wiki/` to `synthetic/`, by path or by file name
 
 Lint compares each number with the cited blocks, not the claim it makes. A sentence that puts two numbers of a block together wrongly passes, and so does `duration("P15D")` for "다음 달 15일까지", whose 15일 is in the block. The verifier agent compares the meaning.
 
@@ -488,12 +474,12 @@ Lint compares each number with the cited blocks, not the claim it makes. A sente
   - Deleted articles do not count.
 - An article is covered when a note other than a statute note links to it or to one of its blocks.
 - Leave out only an article that governs a matter other than 이직 and 실업급여, such as 출산전후급여 or the organization of 고용보험심사위원회.
-- Put under `defer` the 장 and articles that the human owner has put off to a later phase, with the matter as the reason, as recorded in `docs/decisions.md`.
+- Put under `defer` the 장 and articles that the human owner has put off to a later phase, with the matter as the reason.
   - They stay out of the count, together with the articles they delegate to.
   - The report lists them by reason, with those that no note cites yet, so that they can be taken up later.
 - Finish the core flow before details: 이직, 이직확인서, 실업의 신고, 수급자격 인정, 실업의 인정 and 지급 for 근로자, with 취업촉진 수당 and 연장급여.
   - Complete it to verified notes before drafting deferred matters or rare cases of special groups.
-  - Settle each question that a source settles. Leave the others open in their callouts, rare cases included, as the human owner decided in `docs/decisions.md`; they do not hold up the core flow.
+  - Settle each question that a source settles. Leave the others open in their callouts, rare cases included; they do not hold up the core flow.
 
 ### Competency questions
 
@@ -512,21 +498,6 @@ Lint compares each number with the cited blocks, not the claim it makes. A sente
   - The service of a step must `requires` the service of each step that is its 선행 조건.
   - Every competency question a step lists must have a query and pass.
 
-### Decisions
-
-The human owner decides what the wiki covers where the sources leave a question open, such as leaving a case out of scope, but not how a statute is read. A reading that no source settles stays a question.
-
-- Record each answer in `docs/decisions.md` before changing a note.
-  - Give each decision a heading `## <date> <task ID>`, with the items 질문, 판단, 보류 and 반영.
-  - Quote the owner's words verbatim inside “ ” in 판단, one line per point, each ending in a block ID such as `^deadline-reading-1`.
-  - Never edit a recorded decision. Record a change as a new decision that names the block it replaces.
-- In each note, replace an answered question with the reading.
-  - Start the sentence with 이 노트는, footnote it with the blocks it reads, and add a footnote to the decision labelled `판단 기록 <task ID>`, as in `[^4]: [[decisions#^deadline-reading-1|판단 기록 deadline-reading]]`.
-  - Keep decisions out of `source`. A decision settles how the cited blocks are read and is not a source of facts, so a sentence that cites only a decision has no source.
-  - Keep a question that the owner leaves open, and list it under 보류.
-- Return each changed note to `draft` and verify it. `scripts/verify.py context` prints the decision record, and the verifier checks that each reading says what the decision says.
-- Log the operation as `review`.
-
 ### Views
 
 Obsidian's graph view draws links without their kind, so `views/` shows the ontology in canvases, whose edges carry labels, and in bases.
@@ -539,37 +510,14 @@ Obsidian's graph view draws links without their kind, so `views/` shows the onto
 - The graph view in `.obsidian/graph.json` colors notes by class folder, with the colors of the canvases.
 - Commit changes to `.obsidian/` with the work that makes them, but keep `workspace.json` and `workspace-mobile.json` out of Git.
 
-## Log
-
-- Append one entry per operation to `log.md`.
-  - Never edit past entries.
-- Write each heading as `## <date> <time> <operation>`.
-  - Date and time are in KST.
-  - The operation is one of `ingest`, `verify`, `review`, `lint` and `schema`.
-- List the body fields in this order.
-  1. `대상`
-  2. `추가`, `수정`, `삭제`
-  3. `내용`
-
-An entry for ingesting 고용보험법 looks like this.
-
-```markdown
-## 2026-10-14 21:00 ingest
-
-- 대상: 고용보험법
-- 추가: [[고용보험법 제40조]]
-- 수정: [[구직급여]]
-- 내용: 현행 법령의 조문 반영
-```
-
 ## Conventions
 
 ### Language
 
 - Choose the language by reader.
   - `CLAUDE.md`: English
-  - `ontology/schema.md`, `index.md` and `log.md`: English headings, Korean prose
-  - `README.md`, `docs/` and vault notes in `wiki/`, `raw/` and `synthetic/`: Korean
+  - `ontology/schema.md` and `index.md`: English headings, Korean prose
+  - `README.md`, `docs/` and vault notes in `wiki/` and `raw/`: Korean
 - In Korean prose, write technical terms whose original is English in English.
   - Examples: ontology, schema, class, property, instance, wiki, vault, wikilink, backlink, frontmatter, callout, agent, context, hash
 - In Korean prose, write loanwords listed in the Korean dictionary in Korean.

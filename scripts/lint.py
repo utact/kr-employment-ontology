@@ -25,7 +25,6 @@ import lawlib as L
 import vault as V
 
 STATUTE_TYPES = ("LegalResource", "LegalResourceSubdivision")
-DECISIONS = Path("docs") / "decisions.md"
 LINK = re.compile(r"(!?)\[\[([^\]|#]+)(?:#\^([a-z0-9-]+))?(?:\|([^\]]*))?\]\]")
 ANY_LINK = re.compile(r"(!?)\[\[([^\]|#]+)(#[^\]|]*)?(?:\|([^\]]*))?\]\]")
 FOOTNOTE_DEF = re.compile(r"^\[\^([^\]]+)\]:\s*(.*)$")
@@ -84,7 +83,7 @@ class Note:
         self.path, self.folder, self.stem = path, folder, path.stem
         self.where = path.relative_to(root).as_posix()
         self.text = path.read_text(encoding="utf-8")
-        self.meta, self.body = ({}, self.text) if folder == "docs" else V.read_note(path)
+        self.meta, self.body = V.read_note(path)
         self.type = self.meta.get("type")
         self.statute = self.type in STATUTE_TYPES
         self.blocks = block_texts(self.body)
@@ -153,15 +152,12 @@ class Linter:
         self.root = Path(root)
         self.problems = []
         self.notes = {}
-        for folder in ("wiki", "raw", "synthetic"):
+        for folder in ("wiki", "raw"):
             for path in sorted((self.root / folder).rglob("*.md")):
                 note = Note(path, folder, self.root)
                 if note.stem in self.notes:
                     self.problem(note, f"duplicate note name {note.stem}")
                 self.notes[note.stem] = note
-        decisions = self.root / DECISIONS
-        if decisions.exists():
-            self.notes[decisions.stem] = Note(decisions, "docs", self.root)
         self.files = {p.name for folder in ("wiki", "raw") for p in (self.root / folder).rglob("*") if p.is_file()}
         self.terms = sorted((n.stem for n in self.notes.values() if n.folder == "wiki" and not n.statute and re.search(r"\d", n.stem)),
                             key=len, reverse=True)
@@ -182,12 +178,12 @@ class Linter:
 
     def authored(self):
         """Notes written by the LLM: wiki notes other than generated statute notes."""
-        return [n for n in self.notes.values() if n.folder in ("wiki", "synthetic") and not n.statute]
+        return [n for n in self.notes.values() if n.folder == "wiki" and not n.statute]
 
     # links
 
     def check_links(self):
-        """Broken links and undeclared blocks, links to synthetic notes, and notes outside the graph.
+        """Broken links and undeclared blocks, and notes outside the graph.
 
         A note is outside the graph when no other note links to it and it links to nothing but statute and raw notes.
         """
@@ -200,20 +196,12 @@ class Linter:
                     if target.meta.get("identifier") == publisher:
                         incoming[target.stem] += 1
                 continue
-            if note.folder == "wiki":
-                for _, _, angled, plain in MARKDOWN_LINK.findall(note.text):
-                    target_path = urllib.parse.unquote(angled or plain).replace("\\", "/")
-                    target = self.notes.get(Path(target_path.split("#")[0]).stem)
-                    if "synthetic/" in target_path or (target and target.folder == "synthetic"):
-                        self.problem(note, f"links synthetic data: {target_path}")
             for embed, name, anchor, _ in ANY_LINK.findall(note.text):
                 name = name.strip().split("/")[-1]
                 block = anchor[2:] if anchor.startswith("#^") else None
                 if embed:
                     if name not in self.files and name not in self.notes:
                         self.problem(note, f"embedded file not found: {name}")
-                    elif note.folder == "wiki" and name in self.notes and self.notes[name].folder == "synthetic":
-                        self.problem(note, f"embeds synthetic note [[{name}]]")
                     continue
                 target = self.notes.get(name)
                 if target is None:
@@ -223,12 +211,10 @@ class Linter:
                     self.problem(note, f"undeclared block: [[{name}{anchor}]]")
                 elif anchor and block is None and anchor[1:].strip() not in target.headings:
                     self.problem(note, f"link to a heading the note lacks: [[{name}{anchor}]]")
-                if target.stem != note.stem and note.folder != "docs":
+                if target.stem != note.stem:
                     incoming[target.stem] += 1
                     if target.folder == "wiki" and not target.statute:
                         outgoing[note.stem] += 1
-                if note.folder == "wiki" and target.folder == "synthetic":
-                    self.problem(note, f"links synthetic note [[{name}]]")
         for note in self.authored():
             if note.folder == "wiki" and incoming[note.stem] == 0 and outgoing[note.stem] == 0:
                 self.problem(note, "outside the graph: no note links to it, and it links only to statute and raw notes")
@@ -258,7 +244,7 @@ class Linter:
         found = []
         for embed, name, block, _ in links:
             target = self.notes.get(name.strip())
-            if target is None or embed or target.folder == "docs":
+            if target is None or embed:
                 continue
             if block and block in target.blocks:
                 parts = [target.blocks[b] for b in target.blocks if b == block or b.startswith(block + "-")]
@@ -314,7 +300,7 @@ class Linter:
             for links, *_ in self.footnotes(note).values():
                 for embed, name, block, _ in links:
                     target = self.notes.get(name.strip())
-                    if target is not None and target.type != "Rule" and target.folder != "docs":
+                    if target is not None and target.type != "Rule":
                         footnote_links.add((target.stem, block))
             for stem, block in sorted(footnote_links - source_links):
                 self.problem(note, f"footnote source missing from source: [[{stem}{'#^' + block if block else ''}]]")
@@ -804,8 +790,6 @@ class Linter:
     def check_duplicates(self):
         seen, names = {}, {stem.casefold() for stem in self.notes}
         for note in self.notes.values():
-            if note.folder == "docs":
-                continue
             identifier = note.meta.get("identifier")
             if identifier in seen:
                 self.problem(note, f"identifier {identifier} also in {seen[identifier]}")

@@ -4,9 +4,9 @@ Usage:
     a Claude Code PreToolUse hook in .claude/settings.json, which passes the tool call as JSON on stdin
 
 It blocks, with exit code 2 and the reason on stderr:
-- a Write, Edit or MultiEdit of a note in wiki/ or synthetic/ that sets `status: reviewed` or adds `reviewedBy` or `lastReviewed`
+- a Write, Edit or MultiEdit of a note in wiki/ that sets `status: reviewed` or adds `reviewedBy` or `lastReviewed`
 - any edit of a note whose status is reviewed that does not first return it to draft, because any edit returns a note to draft
-- a shell command that names wiki/ or synthetic/, writes, and carries one of those keys
+- a shell command that names wiki/, writes, and carries one of those keys
 
 The shell check reads only the command text, so a script that writes the keys from its own code passes it.
 """
@@ -17,7 +17,7 @@ import sys
 from pathlib import Path
 
 VAULT = Path(__file__).resolve().parents[1]
-GUARDED = ("wiki", "synthetic")
+GUARDED = ("wiki",)
 REVIEWED = re.compile(r"^\s*status:\s*['\"]?reviewed\b", re.M)
 REVIEW_KEYS = re.compile(r"^\s*(?:reviewedBy|lastReviewed)\s*:.*$", re.M)
 # Keys as YAML writes them; a mention in inline code, such as `status: reviewed` in a log entry, is not one.
@@ -26,7 +26,7 @@ WRITES = re.compile(r">|\btee\b|\bsed\s+-i|\bperl\b|\bpython\b|\buv\s+run\b|Set-
 
 
 def guarded(path):
-    """Whether a path is a Markdown note in wiki/ or synthetic/ of this vault."""
+    """Whether a path is a Markdown note in wiki/ of this vault."""
     try:
         relative = Path(path).resolve().relative_to(VAULT)
     except (ValueError, OSError):
@@ -76,7 +76,7 @@ def check(call):
         return check_edits(path, [(e.get("old_string", ""), e.get("new_string", "")) for e in data.get("edits", [])])
     if tool in ("Bash", "PowerShell"):
         command = data.get("command", "")
-        if TOKENS.search(command) and WRITES.search(command) and re.search(r"wiki|synthetic", command):
+        if TOKENS.search(command) and WRITES.search(command) and re.search(r"wiki", command):
             return "the command may write status: reviewed, reviewedBy or lastReviewed into a note, which only the human owner does"
     return None
 

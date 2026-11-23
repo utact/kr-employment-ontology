@@ -99,8 +99,6 @@ uv run python -X utf8 scripts/export_view.py --check
 
 예제 화면의 그래프는 미리 정의한 규칙 실행을 보여준다. 이 브랜치의 자유질문 화면은 별도의 상담 서버 경로를 사용한다. 구독 GPT로 실제 첫 응답을 받는 것과 두 제품의 정확도·가독성을 비교하는 것은 검증 과제로 남아 있다. [자유질문 평가 절차](docs/free-question-benchmark.md)
 
-볼트의 법령 기준일과 후속 검토 항목은 [검증 후속 검토](docs/verification-followups.md)에서 확인할 수 있다.
-
 ## License
 
 코드는 [MIT License](LICENSE)를 따른다. 수집 원문, 표준과 시각 자산의 이용 조건은 각 출처 표기를 따른다. [표준 출처](ontology/shapes/README.md) · [시각 자산 출처](view/README.md#심벌)
