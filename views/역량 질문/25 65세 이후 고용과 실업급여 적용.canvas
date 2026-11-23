@@ -1,0 +1,145 @@
+{
+	"nodes": [
+		{
+			"id": "594fd1615a341c77",
+			"type": "text",
+			"text": "## cq-25 65세 이후 고용과 실업급여 적용\n\n질문: 65세 이후에 처음 고용된 사람과 65세 전부터 피보험자격을 유지하며 같은 사업에서 계속 일한 사람은 실업급여 적용이 어떻게 다른가?\n\n`ontology/cq/cq-25.rq`가 돌려주는 노트와 그 노트들의 관계, 근거 조문 block이다. 연결선의 이름은 schema의 property다.",
+			"x": 0,
+			"y": -320,
+			"width": 880,
+			"height": 260
+		},
+		{
+			"id": "3a91d1878b09c52a",
+			"type": "file",
+			"file": "wiki/Concept/65세 이후에 고용되거나 자영업을 개시한 사람.md",
+			"x": 0,
+			"y": 0,
+			"width": 400,
+			"height": 240,
+			"color": "#e64980"
+		},
+		{
+			"id": "4c17e84593ed36ce",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험 및 산업재해보상보험의 보험료징수 등에 관한 법률 제13조.md",
+			"x": 560,
+			"y": 0,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20190115-p2"
+		},
+		{
+			"id": "2a8d8ffe804b5506",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험 및 산업재해보상보험의 보험료징수 등에 관한 법률 제13조.md",
+			"x": 560,
+			"y": 280,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20190115-p3"
+		},
+		{
+			"id": "70d9d89d2353d8fa",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험 및 산업재해보상보험의 보험료징수 등에 관한 법률 제13조.md",
+			"x": 560,
+			"y": 560,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20190115-p4"
+		},
+		{
+			"id": "26f2196ec77be3c4",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험 및 산업재해보상보험의 보험료징수 등에 관한 법률 제13조.md",
+			"x": 560,
+			"y": 840,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20190115-p4-i1"
+		},
+		{
+			"id": "1417f47c5d7187b8",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제10조.md",
+			"x": 560,
+			"y": 1120,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20221231-p2"
+		},
+		{
+			"id": "b7cb0b4fcf5f5ef3",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제4장.md",
+			"x": 560,
+			"y": 1400,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20070511-t"
+		}
+	],
+	"edges": [
+		{
+			"id": "0b1ee80378df21ec",
+			"fromNode": "3a91d1878b09c52a",
+			"fromSide": "right",
+			"toNode": "1417f47c5d7187b8",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "1aa50a24d0c3c95a",
+			"fromNode": "3a91d1878b09c52a",
+			"fromSide": "right",
+			"toNode": "b7cb0b4fcf5f5ef3",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "616f8cb4f96b698c",
+			"fromNode": "3a91d1878b09c52a",
+			"fromSide": "right",
+			"toNode": "4c17e84593ed36ce",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "dcc7b5077d488bab",
+			"fromNode": "3a91d1878b09c52a",
+			"fromSide": "right",
+			"toNode": "2a8d8ffe804b5506",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "e1cf03ca0cfcf743",
+			"fromNode": "3a91d1878b09c52a",
+			"fromSide": "right",
+			"toNode": "70d9d89d2353d8fa",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "3b1f623a1febf93d",
+			"fromNode": "3a91d1878b09c52a",
+			"fromSide": "right",
+			"toNode": "26f2196ec77be3c4",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		}
+	]
+}

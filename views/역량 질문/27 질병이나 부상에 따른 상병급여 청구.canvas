@@ -1,0 +1,553 @@
+{
+	"nodes": [
+		{
+			"id": "594fd1615a341c77",
+			"type": "text",
+			"text": "## cq-27 질병이나 부상에 따른 상병급여 청구\n\n질문: 실업 신고를 한 수급자격자가 질병이나 부상으로 취업할 수 없어 실업인정을 받지 못했다면 언제까지 어떤 서류를 어디에 내는가?\n\n`ontology/cq/cq-27.rq`가 돌려주는 노트와 그 노트들의 관계, 근거 조문 block이다. 연결선의 이름은 schema의 property다.",
+			"x": 0,
+			"y": -320,
+			"width": 880,
+			"height": 260
+		},
+		{
+			"id": "bd8f45ab61dc768a",
+			"type": "file",
+			"file": "wiki/PublicService/상병급여.md",
+			"x": 0,
+			"y": 0,
+			"width": 400,
+			"height": 240,
+			"color": "#e8590c"
+		},
+		{
+			"id": "59830d39a3e34891",
+			"type": "file",
+			"file": "wiki/EvidenceType/상병급여 청구서.md",
+			"x": 560,
+			"y": 0,
+			"width": 400,
+			"height": 240,
+			"color": "#f76707"
+		},
+		{
+			"id": "0e28b618a2dbaae4",
+			"type": "file",
+			"file": "wiki/Constraint/상병급여 청구 기한.md",
+			"x": 560,
+			"y": 280,
+			"width": 400,
+			"height": 240,
+			"color": "#1098ad"
+		},
+		{
+			"id": "e6de27cbad5fadf2",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행규칙 별지 제95호서식.md",
+			"x": 1120,
+			"y": 0,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20240701-t"
+		},
+		{
+			"id": "74232b4aa0ff3994",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행규칙 별지 제96호서식.md",
+			"x": 1120,
+			"y": 280,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20240701-t"
+		},
+		{
+			"id": "9db566eb5a708ee7",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행규칙 제107조.md",
+			"x": 1120,
+			"y": 560,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20080225-p1"
+		},
+		{
+			"id": "71e9a630232e0f50",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행규칙 제107조.md",
+			"x": 1120,
+			"y": 840,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20080225-p2"
+		},
+		{
+			"id": "61c5e58d69226531",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행규칙 제107조.md",
+			"x": 1120,
+			"y": 1120,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20080225-p3"
+		},
+		{
+			"id": "127ed8e003249a46",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행규칙 제90조.md",
+			"x": 1120,
+			"y": 1400,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20210701-i1"
+		},
+		{
+			"id": "a1e9cef801f62779",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행령 제82조.md",
+			"x": 1120,
+			"y": 1680,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20240701-p2"
+		},
+		{
+			"id": "dd770a06cccce612",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행령 제82조.md",
+			"x": 1120,
+			"y": 1960,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20240701-p2-i1"
+		},
+		{
+			"id": "e99878d4e57a9c07",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행령 제82조.md",
+			"x": 1120,
+			"y": 2240,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20240701-p2-i2"
+		},
+		{
+			"id": "017e1eac0609def0",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행령 제83조.md",
+			"x": 1120,
+			"y": 2520,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20201210-t"
+		},
+		{
+			"id": "23361429255fc3c7",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제3조.md",
+			"x": 1120,
+			"y": 2800,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20100705-t"
+		},
+		{
+			"id": "c5450a20f57e8ed5",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제43조.md",
+			"x": 1120,
+			"y": 3080,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20200828-p5"
+		},
+		{
+			"id": "d3251d6578f7c584",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제63조.md",
+			"x": 1120,
+			"y": 3360,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20200828-p1"
+		},
+		{
+			"id": "f9787344aa08fc7c",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제63조.md",
+			"x": 1120,
+			"y": 3640,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20200828-p2"
+		},
+		{
+			"id": "701f2a4d5b8d0c2b",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제63조.md",
+			"x": 1120,
+			"y": 3920,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20200828-p3"
+		},
+		{
+			"id": "5daa1894ed74ee1b",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제63조.md",
+			"x": 1120,
+			"y": 4200,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20200828-p4"
+		},
+		{
+			"id": "5ca2f37aaf521191",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제63조.md",
+			"x": 1120,
+			"y": 4480,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20200828-p5"
+		},
+		{
+			"id": "0c8a4b3f472659eb",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제69조의9.md",
+			"x": 1120,
+			"y": 4760,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20230701-p1"
+		},
+		{
+			"id": "e4a06c502bda4bb0",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제77조의10.md",
+			"x": 1120,
+			"y": 5040,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20230701-p2"
+		},
+		{
+			"id": "b2860b3b03934499",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 제77조의5.md",
+			"x": 1120,
+			"y": 5320,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20230701-p2"
+		},
+		{
+			"id": "20539d5ede7c2848",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행규칙 별지 제95호서식.md",
+			"x": 1120,
+			"y": 5600,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96"
+		},
+		{
+			"id": "f604a78806f76b3b",
+			"type": "file",
+			"file": "wiki/LegalResourceSubdivision/고용보험법 시행령 제82조.md",
+			"x": 1120,
+			"y": 5880,
+			"width": 440,
+			"height": 240,
+			"color": "#868e96",
+			"subpath": "#^v20240701-p1"
+		}
+	],
+	"edges": [
+		{
+			"id": "44a22ab56cf62011",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "59830d39a3e34891",
+			"toSide": "left",
+			"label": "hasInputType"
+		},
+		{
+			"id": "339738606f39a030",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "0e28b618a2dbaae4",
+			"toSide": "left",
+			"label": "holdsRequirement"
+		},
+		{
+			"id": "05a3ea07e854cf0d",
+			"fromNode": "59830d39a3e34891",
+			"fromSide": "right",
+			"toNode": "20539d5ede7c2848",
+			"toSide": "left",
+			"label": "isDefinedBy"
+		},
+		{
+			"id": "e669ed5a64949f69",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "d3251d6578f7c584",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "5b65a5abd2a2e459",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "f9787344aa08fc7c",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "60b51775bfaca86e",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "701f2a4d5b8d0c2b",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "a80f353a5959d14f",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "5daa1894ed74ee1b",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "aef6375e8f8a61bc",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "5ca2f37aaf521191",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "12cebd87175e6a6e",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "f604a78806f76b3b",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "cec8f66f914d8940",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "a1e9cef801f62779",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "5d0a6e819c22edf7",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "dd770a06cccce612",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "40e61755b79a75a4",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "e99878d4e57a9c07",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "ddf7e69e0e23fcff",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "017e1eac0609def0",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "c49b13c9ead4d1ae",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "9db566eb5a708ee7",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "c5ca2c8d7d09c83a",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "71e9a630232e0f50",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "b9ad337a3d6486ee",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "61c5e58d69226531",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "6c3621ba4ba53ed8",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "127ed8e003249a46",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "24610fb6864a632d",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "c5450a20f57e8ed5",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "b38f7140f98bd077",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "23361429255fc3c7",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "41baf9ff14a55bf9",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "0c8a4b3f472659eb",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "01d7a6c17bc11cbf",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "b2860b3b03934499",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "7e323f4ef5944e90",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "e4a06c502bda4bb0",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "2139cc285fdee321",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "e6de27cbad5fadf2",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "327b1b0a3859ece2",
+			"fromNode": "bd8f45ab61dc768a",
+			"fromSide": "right",
+			"toNode": "74232b4aa0ff3994",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "1c852ed5bd843872",
+			"fromNode": "59830d39a3e34891",
+			"fromSide": "right",
+			"toNode": "9db566eb5a708ee7",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "1c9bd613dbaa225d",
+			"fromNode": "59830d39a3e34891",
+			"fromSide": "right",
+			"toNode": "f604a78806f76b3b",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "eeda6777c1148409",
+			"fromNode": "59830d39a3e34891",
+			"fromSide": "right",
+			"toNode": "71e9a630232e0f50",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "9b057414e1477de4",
+			"fromNode": "59830d39a3e34891",
+			"fromSide": "right",
+			"toNode": "127ed8e003249a46",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "4482f714cc8a077e",
+			"fromNode": "59830d39a3e34891",
+			"fromSide": "right",
+			"toNode": "e6de27cbad5fadf2",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		},
+		{
+			"id": "b197409a024888d3",
+			"fromNode": "0e28b618a2dbaae4",
+			"fromSide": "right",
+			"toNode": "f604a78806f76b3b",
+			"toSide": "left",
+			"label": "source",
+			"color": "#868e96"
+		}
+	]
+}
