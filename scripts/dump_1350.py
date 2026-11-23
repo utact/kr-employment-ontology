@@ -1,13 +1,13 @@
 """Store the public 1350 pages that the evaluation cases come from, and the original question and answer of each case.
 
 Usage:
-    uv run python -X utf8 scripts/dump_1350.py [DIR]
+    uv run python -X utf8 scripts/dump_1350.py [DIR] [--offline]
 
-DIR defaults to docs/evaluation/1350. The script reads the URLs of cases.jsonl and holdout.jsonl, fetches each page once,
+DIR defaults to docs/evaluation/1350. The script reads the URLs of cases.jsonl, fetches each page once,
 and stores its response bytes as pages/<page id> <YYYYMMDDTHHMM>.html, listed in pages/index.jsonl with its SHA-256.
-A page whose bytes match its latest stored copy is not stored again.
+A page whose bytes match its latest stored copy is not stored again. --offline skips fetching.
 It then writes originals.jsonl with the original question and answers of every case in cases.jsonl, matched by
-URL, 신청일 and 답변일. Holdout cases are only counted, so that their text stays in the pages.
+URL, 신청일 and 답변일, from the latest copy of each page.
 """
 
 import hashlib
@@ -62,8 +62,8 @@ def rows(path):
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
-def main(folder):
-    cases, holdout = rows(folder / "cases.jsonl"), rows(folder / "holdout.jsonl")
+def main(folder, offline=False):
+    cases = rows(folder / "cases.jsonl")
     pages = folder / "pages"
     pages.mkdir(exist_ok=True)
     index_path = pages / "index.jsonl"
@@ -71,8 +71,8 @@ def main(folder):
     latest = {}
     for entry in index:
         latest[entry["id"]] = entry
-    urls = sorted({c["url"] for c in cases + holdout}, key=page_id)
-    for number, url in enumerate(urls):
+    urls = sorted({c["url"] for c in cases}, key=page_id)
+    for number, url in enumerate([] if offline else urls):
         ident = page_id(url)
         body = fetch(url)
         digest = hashlib.sha256(body).hexdigest()
@@ -105,11 +105,11 @@ def main(folder):
         out.append({"id": case["id"], "question": hit[0]["question"], "answers": hit[0]["answers"], "page": hit[0]["page"]})
     (folder / "originals.jsonl").write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in out),
                                             encoding="utf-8", newline="\n")
-    held = sum((h["url"], h["posted"], h["answered"]) in found for h in holdout)
-    print(f"pages {len(urls)}, cases {len(out)}/{len(cases)}, holdout found {held}/{len(holdout)}")
+    print(f"pages {len(urls)}, cases {len(out)}/{len(cases)}")
     for ident in missing:
         print("MISSING", ident)
 
 
 if __name__ == "__main__":
-    main(Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "docs/evaluation/1350")
+    args = [a for a in sys.argv[1:] if a != "--offline"]
+    main(Path(args[0]) if args else ROOT / "docs/evaluation/1350", offline="--offline" in sys.argv[1:])
