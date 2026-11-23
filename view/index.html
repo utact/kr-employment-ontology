@@ -138,7 +138,6 @@
     <div class="about-tabs" role="tablist" aria-label="소개 항목">
       <button id="about-intro-tab" role="tab" aria-selected="true" aria-controls="about-intro">소개</button>
       <button id="about-sources-tab" role="tab" aria-selected="false" aria-controls="about-sources" tabindex="-1">출처</button>
-      <button id="about-status-tab" role="tab" aria-selected="false" aria-controls="about-status" tabindex="-1">버전</button>
       <button id="about-example-tab" role="tab" aria-selected="false" aria-controls="about-example" tabindex="-1">예제</button>
     </div>
     <div class="about-body">
@@ -149,25 +148,17 @@
           <dt>근거</dt><dd><ul class="about-items"><li>법률·시행령·시행규칙과 행정규칙</li><li>대법원 판례와 법제처 법령해석례</li></ul></dd>
           <dt>고용24 안내</dt><dd><ul class="about-items"><li>이용 흐름 구성과 법령 차이 비교</li></ul></dd>
         </dl>
+        <div class="release-metrics"><span>지식 노트 <strong id="about-knowledge-count"></strong></span><span>법령 원문 노트 <strong id="about-statute-count"></strong></span></div>
         <p class="about-note">대한민국 · 법령 기준 <time data-about-date datetime="2026-10-14">2026.10.14</time></p>
       </section>
       <section id="about-sources" role="tabpanel" aria-labelledby="about-sources-tab" tabindex="0" hidden>
         <dl class="about-facts source-facts">
-          <dt>법령</dt><dd><a href="https://www.law.go.kr/" target="_blank" rel="noopener">법제처 국가법령정보센터 ↗</a><span>19개 · 핵심 법령 6개, 참조 법령 13개</span><div class="source-links"><a href="https://www.law.go.kr/법령/고용보험법" target="_blank" rel="noopener">고용보험법</a><a href="https://www.law.go.kr/법령/고용보험및산업재해보상보험의보험료징수등에관한법률" target="_blank" rel="noopener">고용산재보험료징수법</a></div></dd>
-          <dt>행정규칙</dt><dd><a href="https://www.law.go.kr/행정규칙/실업인정및재취업지원규정" target="_blank" rel="noopener">실업인정 및 재취업지원규정 ↗</a><span>법제처 국가법령정보센터 · 최저임금 고시 등 19종</span></dd>
-          <dt>판례·해석례</dt><dd><a href="https://open.law.go.kr/LSO/index.html" target="_blank" rel="noopener">법제처 국가법령정보 공동활용 ↗</a><span>대법원 판례 8건 · 법제처 법령해석례 10건</span></dd>
+          <dt>법령</dt><dd><a href="https://www.law.go.kr/" target="_blank" rel="noopener">법제처 국가법령정보센터 ↗</a><div class="source-links"><a href="https://www.law.go.kr/법령/고용보험법" target="_blank" rel="noopener">고용보험법</a><a href="https://www.law.go.kr/법령/고용보험및산업재해보상보험의보험료징수등에관한법률" target="_blank" rel="noopener">고용산재보험료징수법</a></div></dd>
+          <dt>행정규칙</dt><dd><a href="https://www.law.go.kr/행정규칙/실업인정및재취업지원규정" target="_blank" rel="noopener">실업인정 및 재취업지원규정 ↗</a><span>법제처 국가법령정보센터 · 최저임금 고시 등</span></dd>
+          <dt>판례·해석례</dt><dd><a href="https://open.law.go.kr/LSO/index.html" target="_blank" rel="noopener">법제처 국가법령정보 공동활용 ↗</a><span>대법원 판례 · 법제처 법령해석례</span></dd>
           <dt>고용24 안내</dt><dd><a href="https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000254&amp;systCnntId=&amp;systId=SI00000411" target="_blank" rel="noopener">실업급여(상용직) ↗</a><div class="source-links"><a href="https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000255&amp;systCnntId=&amp;systId=SI00000387" target="_blank" rel="noopener">실업급여(일용직)</a><a href="https://m.work24.go.kr/cm/c/f/1100/selecSystInfo.do?systClId=SC00000260&amp;systCnntId=&amp;systId=SI00000343" target="_blank" rel="noopener">이직확인서</a></div></dd>
         </dl>
         <p class="about-note">법령·행정규칙·판례·해석례 수집: <a href="https://open.law.go.kr/LSO/index.html" target="_blank" rel="noopener">법제처 공동활용 API ↗</a><br>볼트에는 시행일별 원문과 인용 위치를 보관. 위 링크는 각 출처의 공식 페이지로 연결.</p>
-      </section>
-      <section id="about-status" role="tabpanel" aria-labelledby="about-status-tab" tabindex="0" hidden>
-        <div class="release-heading"><strong>v0.1</strong><time datetime="2026-11-09">2026.11.09</time></div>
-        <dl class="about-facts release-facts">
-          <dt>현재 제공</dt><dd><ul class="about-items"><li>이직·실업급여의 요건·금액·신고·신청 절차</li><li>자영업자·예술인·노무제공자 급여 관련 지식</li><li>구직급여 상한액 비교 예제와 근거 탐색</li></ul></dd>
-          <dt>제공 예정</dt><dd><ul class="about-items"><li>상용근로자·사업주 이직 처리 예제 추가</li><li>심사·재심사 등 세부 절차 확장</li><li>미해결 해석의 추가 근거 확인</li></ul></dd>
-        </dl>
-        <div class="release-metrics"><span>지식 노트 <strong id="about-knowledge-count">755</strong></span><span>법령 원문 노트 <strong id="about-statute-count">616</strong></span><span>역량 질문 <strong>24개 통과</strong></span></div>
-        <p class="about-note">대상 조문 171/171 인용 · 2026.11.09 확인<br>지정된 답과 근거의 연결을 검사한 결과. 미해결 질문은 해당 노트에 별도 표기.</p>
       </section>
       <section id="about-example" role="tabpanel" aria-labelledby="about-example-tab" tabindex="0" hidden>
         <p class="about-example-title"><span>예제 01</span>구직급여 상한액</p>
