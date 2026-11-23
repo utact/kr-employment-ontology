@@ -1,4 +1,4 @@
-"""Lint the wiki against the checks under Lint in CLAUDE.md.
+"""Lint the wiki against the checks under Lint in AGENTS.md.
 
 Usage:
     uv run python -X utf8 scripts/lint.py [ROOT]

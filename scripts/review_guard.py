@@ -1,4 +1,4 @@
-"""Block the LLM from marking vault notes as reviewed, as the Review rules of CLAUDE.md require.
+"""Block the LLM from marking vault notes as reviewed, as the Review rules of AGENTS.md require.
 
 Usage:
     a Claude Code PreToolUse hook in .claude/settings.json, which passes the tool call as JSON on stdin

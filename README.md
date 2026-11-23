@@ -43,7 +43,7 @@ flowchart LR
     D --> E["답변 생성·인용 검사"]
 ```
 
-원문·지식·스키마를 나눈 [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 방식이다. 법령 조문 노트는 스크립트가 원문에서 생성하고, LLM은 원문을 인용해 지식과 관계를 쓰며, 별도 검증 에이전트가 대조한다. [운영 규칙](CLAUDE.md) · [구현 구조](docs/implementation.md)
+원문·지식·스키마를 나눈 [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) 방식이다. 법령 조문 노트는 스크립트가 원문에서 생성하고, LLM은 원문을 인용해 지식과 관계를 쓰며, 별도 검증 에이전트가 대조한다. [운영 규칙](AGENTS.md) · [구현 구조](docs/implementation.md)
 
 ## Quick start
 
