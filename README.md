@@ -35,7 +35,7 @@ flowchart LR
 
 Ontology는 급여·수급 요건·증빙이 어떤 조문에 근거하는지 표현한다. LLM Wiki는 이 지식을 Obsidian vault에 축적하고 갱신하는 방식이다. 스크립트가 조문 노트를 생성하면 LLM이 근거를 인용해 지식 노트를 연결한다. 별도 검증 agent가 노트와 원문을 대조한다. [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) · [운영 규칙](AGENTS.md)
 
-자유질문 챗봇은 답할 때마다 vault를 검색하는 retrieval-augmented generation(RAG)을 쓴다. 질문에 맞는 노트와 조문 시행본을 찾아 모델에 전달하고 답변의 인용을 검사한다. 자유질문은 명령줄에서 실행할 수 있다. 상한액 데모는 정해진 사례를 서버에서 계산한 뒤 모델이 설명하는 별도 예제다. [RAG 원 논문](https://arxiv.org/abs/2005.11401) · [구현 구조](docs/architecture.md#question-answering)
+자유질문에는 retrieval-augmented generation(RAG)을 쓴다. 모델이 고른 개념과 BM25 어휘 검색으로 출발 노트를 찾는다. 노트 사이의 관계를 따라 관련 요건과 예외를 찾고, 그 노트가 인용한 조문을 모델에 전달한다. 검색과 인용 검사는 코드가 맡고, 근거를 사건에 적용해 답하는 일은 언어 모델이 맡는다. 자유질문은 명령줄에서 실행한다. 상한액 데모는 서버가 직접 계산하는 별도 예제다. [RAG 원 논문](https://arxiv.org/abs/2005.11401) · [검색과 답변 생성](docs/architecture.md#question-answering)
 
 Competency questions는 ontology가 답할 수 있어야 하는 질문이다. 예를 들어 피보험자격 확인을 누가 청구하고 어디에 제출하는지 묻는다. 법령과 서식에서 기대 답을 정하고 SPARQL로 노트와 근거의 연결을 검사한다. 실제 상담 문장으로 생성한 답은 1350 벤치마크에서 따로 평가한다. [Ontology Development 101](https://protege.stanford.edu/publications/ontology_development/ontology101-noy-mcguinness.html) · [역량 질문](docs/competency-questions.md)
 
@@ -64,7 +64,7 @@ Competency questions는 ontology가 답할 수 있어야 하는 질문이다. �
 | 대법원 판례, 법령해석례 | 법제처 공동활용 API |
 | 고용24 안내 | 안내 웹페이지 |
 
-현행·시행예정 원문과, 경과조치 판단에 필요한 과거 버전을 보존한다. [수집 목록](scripts/sources.yaml) · [기준일과 경과 기간](ontology/release.yaml)
+현행·시행예정 원문과 경과조치 판단에 필요한 과거 버전을 보존한다. 질문에는 로컬에 저장한 시행본으로 답한다. 기준일과 수집 범위는 공개하며, 새 공포를 감지해 vault까지 자동 갱신하는 절차는 아직 없다. [수집 목록](scripts/sources.yaml) · [vault 기준일](ontology/release.yaml) · [갱신 방식](docs/architecture.md#source-updates)
 
 공공서비스는 CPSV-AP 3.2.0, 요건·증빙은 CCCEV 2.1.0, 법령과 버전은 ELI 1.4로 모델링한다. 개념 분류는 SKOS, 출처는 PROV-O로 표현하며, class와 property는 [LinkML schema](ontology/schema.yaml)에 정의한다. [schema 문서](ontology/schema.md)
 
