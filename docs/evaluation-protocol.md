@@ -39,12 +39,14 @@ GPT와 Claude에서 vault의 효과를 비교할 때는 각 모델 안에서 얻
 
 ## Procedure
 
-1. 같은 모델로 vault를 쓸 때와 쓰지 않을 때의 답을 받는다. 조건을 가린 두 답의 원문을 대조해 결론, 적용 조건, 필요한 사실이나 다음 행동이 달라지는 문항을 고른다. 선별 결과를 정오 판정과 따로 기록한다.
-2. 우선 검토할 사례마다 기준 답안을 정한다.
-3. 기준 답안과 어긋난 답마다 공식 원문, wiki 서술, 모델에 넘긴 근거, 답을 차례로 대조해 처음 어긋난 곳을 고친다. 고친 뒤 같은 질문과, 조건 하나만 바꾼 질문으로 전후를 비교한다.
-4. 질문을 입력 문장으로 정제한다. 원래 질문의 사실을 더하거나 빼지 않는다.
-5. 같은 입력을 AI 노동법 상담과 챗봇에 넣는다. AI 노동법 상담에는 직접 입력하고 첫 응답을 그대로 저장한다. 자동화하지 않는다.
-6. 응답의 출처를 가리고 기준 답안으로 채점한다.
+1. 같은 모델에서 vault가 있을 때와 없을 때의 답을 받는다.
+2. 조건을 가린 두 답을 대조해 우선 검토할 사례를 고른다.
+3. 사례별 기준 답안을 정한다.
+4. 공식 원문 → wiki 서술 → 모델에 전달한 근거 → 답변 순으로 대조해 오류가 처음 생긴 곳을 고친다.
+5. 원래 질문과 조건 하나만 바꾼 질문으로 수정 전후의 답을 확인한다.
+6. 원래 사실을 보존한 비교 질문을 확정한다.
+7. 같은 질문을 두 서비스에 입력하고 첫 응답을 그대로 저장한다. AI 노동법 상담에는 수동으로 입력한다.
+8. 응답의 출처를 가리고 기준 답안으로 채점한다.
 
 development set에서 여러 사례에 적용할 수 있는 지식 요구를 찾으면 [역량 질문](competency-questions.md)에 반영한다. 원래 상담 질문과 응답은 평가 자료에 둔다.
 
@@ -80,7 +82,13 @@ uv run python -X utf8 scripts/bench_qa.py message docs/evaluation/fixed.json cas
 uv run python -X utf8 scripts/bench_qa.py blind docs/evaluation/fixed.json docs/evaluation/responses.jsonl docs/evaluation/grading-01
 ```
 
-- `preview`: 두 조건의 첫 응답과 입력, 상담일, 모델 설정, 코드와 wiki의 식별 정보를 저장한다. vault를 사용한 응답에는 검색한 노트와 근거도 저장한다. `--context historical`은 과거 상담일 안내를 질문에 붙이고, `live`는 붙이지 않는다.
-- `freeze`: 검토를 마친 문항의 입력과 응답을 고정한다.
-- `message`: AI 노동법 상담에 붙여 넣을 문장을 출력한다.
-- `blind`: 외부 응답(`responses.jsonl`의 `id`, `sent`, `first_response`)과 챗봇 답을 A/B로 섞어 `answers.json`에, 배정표를 `key.json`에 따로 쓴다.
+| 명령 | 결과 |
+| --- | --- |
+| `preview` | 두 조건의 첫 응답과 재현에 필요한 기록 |
+| `freeze` | 검토를 마친 문항의 고정된 입력과 응답 |
+| `message` | AI 노동법 상담에 붙여 넣을 질문 |
+| `blind` | 출처를 가린 응답 쌍(`answers.json`)과 별도 배정표(`key.json`) |
+
+`preview`는 입력, 상담일, 모델 설정, 코드와 wiki의 식별 정보를 저장한다. vault를 사용한 응답에는 검색한 노트와 근거도 저장한다. 과거 상담일을 질문에 명시할 때는 `--context historical`을, 원래 질문을 그대로 보낼 때는 `--context live`를 쓴다.
+
+`blind`에 제공하는 외부 응답 파일(`responses.jsonl`)에는 `id`, `sent`, `first_response`를 담는다.
