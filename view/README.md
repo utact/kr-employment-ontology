@@ -8,15 +8,17 @@
 uv run python -X utf8 view/serve.py
 ```
 
-<http://127.0.0.1:8765/view/>를 연다. 서버는 `127.0.0.1`에서 `view/`만 제공한다. wiki가 바뀌면 `uv run python -X utf8 scripts/export_view.py`로 `data/vault.json`을 갱신한다.
+[로컬 예제 화면](http://127.0.0.1:8765/view/)을 연다. 서버는 `127.0.0.1`에서 `view/`만 제공한다. wiki가 바뀌면 `uv run python -X utf8 scripts/export_view.py`로 `data/vault.json`을 갱신한다.
 
 ## Model configuration
 
-설명은 `.env`의 `LLM_PROVIDER`로 정한 모델이 만든다. 기본값은 NVIDIA Nemotron 3 Ultra이고, `gemini`로 바꿀 수 있다. 키는 서버에서만 읽는다. 모델에는 질문, 서버가 계산한 결과, 법령 발췌 4개를 보내고, 응답의 금액과 근거 ID를 검사한 뒤 표시한다. 요청이 실패하면 오류를 표시한다.
+`.env`의 `LLM_PROVIDER`로 설명을 생성할 모델을 고른다. 기본 모델은 NVIDIA Nemotron 3 Ultra다. Gemini를 쓰려면 `gemini`로 설정한다. API 키는 서버에서만 읽는다.
+
+서버는 질문, 계산 결과, 법령 발췌 4개를 모델에 보낸다. 응답의 금액과 근거 ID를 검사한 뒤 설명을 표시한다. 요청이 실패하면 화면에 오류를 표시한다.
 
 ## Baseline responses
 
-비교 대상은 [고용노동부·한국공인노무사회 AI 노동법 상담](https://ai.moel.go.kr/llc/labor-law-chat)이다. 2026-11-09에 질문별 새 대화에서 받은 응답과 표시 시점을 `data/baseline-responses.json`에 저장했고, 원본 관측과 캡처는 `data/captures/`에 있다. `scripts/build_baseline.py`가 캡처에서 표시용 데이터를 만든다.
+2026-11-09에 고용노동부·한국공인노무사회의 [AI 노동법 상담](https://ai.moel.go.kr/llc/labor-law-chat)에서 질문마다 새 대화를 열었다. [원본 기록](data/captures/)에는 응답과 표시 시점이 담겨 있다. [생성 스크립트](../scripts/build_baseline.py)가 이 기록에서 [화면용 데이터](data/baseline-responses.json)를 만든다.
 
 두 질문 모두 해당 서비스는 66,000원이라고 답했다. 상한액은 [고용노동부의 시행령 개정 안내](https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=18736)와 [1350 상담 답변](https://1350.moel.go.kr/rtmview.do?id=1000324861)으로 교차 확인했다. 응답 시간은 질문별 1회 화면 관측값이라 서비스 성능 비교에 쓰지 않는다.
 

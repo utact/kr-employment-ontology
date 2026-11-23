@@ -9,7 +9,7 @@
 
 ## Demo
 
-<https://github.com/user-attachments/assets/2c39a92c-2c16-4051-8402-d00298c80bdd>
+[구직급여 상한액 비교 영상](https://github.com/user-attachments/assets/2c39a92c-2c16-4051-8402-d00298c80bdd)
 
 하루 8시간 일한 일용근로자의 구직급여 일액 상한을 이직일만 바꿔 [고용노동부 AI 노동법 상담](https://ai.moel.go.kr/)에 물었다.
 
@@ -78,7 +78,7 @@ uv sync --frozen
 uv run python -X utf8 scripts/ask.py answer "2025년 12월 31일에 퇴사한 일용근로자의 구직급여 하루 상한액은?" --as-of 2026-01-15 --provider nvidia --format text
 ```
 
-예제 화면은 `uv run python -X utf8 view/serve.py`로 열고 <http://127.0.0.1:8765/view/>에서 본다. [화면 설명](view/README.md)
+`uv run python -X utf8 view/serve.py`를 실행한 뒤 [로컬 예제 화면](http://127.0.0.1:8765/view/)을 연다. [화면 설명](view/README.md)
 
 검사는 다음 명령으로 실행한다. 원문을 다시 수집하려면 `.env`에 `LAW_OC`가 필요하다.
 

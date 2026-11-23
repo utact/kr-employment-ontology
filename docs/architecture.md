@@ -30,7 +30,9 @@
 
 ## Demo
 
-[export_view.py](../scripts/export_view.py)가 wiki를 그래프 JSON으로 내보내고, 화면은 이직일에 따라 구직급여 상한액의 규정과 계산을 고른다. 서버의 [model.py](../view/model.py)가 같은 계산을 하고, 계산 결과와 법령 발췌를 언어 모델에 보내 설명을 받는다. 설명의 금액과 근거 ID를 검사한 뒤 표시한다. 그래프의 단계 이동은 이 규칙 실행 순서이며, 모델의 추론 과정이 아니다. [화면 설명](../view/README.md)
+[export_view.py](../scripts/export_view.py)는 wiki를 그래프 JSON으로 내보낸다. 화면은 이직일에 맞는 규정으로 구직급여 상한액을 계산한다. 그래프에는 규칙을 적용한 순서가 나타난다.
+
+서버의 [model.py](../view/model.py)도 같은 규정으로 상한액을 계산한다. 모델은 계산 결과와 법령 발췌를 바탕으로 설명을 작성한다. 서버는 설명의 금액과 근거 ID를 검사한 뒤 화면에 보낸다. [화면 설명](../view/README.md)
 
 ## Validation
 
