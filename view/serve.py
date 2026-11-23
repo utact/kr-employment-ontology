@@ -9,6 +9,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 import model
+import free_question
 
 ROOT = Path(__file__).resolve().parent
 MODEL_LOCK = threading.Lock()
@@ -50,7 +51,8 @@ class Handler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
-        if not self.local_host() or self.path != "/view/api/explain":
+        free = self.path == "/view/api/ask"
+        if not self.local_host() or (not free and self.path != "/view/api/explain"):
             self.send_error(404)
             return
         if self.headers.get("Origin") != f"http://{self.headers.get('Host')}":
@@ -61,10 +63,12 @@ class Handler(SimpleHTTPRequestHandler):
             return
         try:
             size = int(self.headers.get("Content-Length", "0"))
-            if not 0 < size <= 2048:
+            if not 0 < size <= (32768 if free else 2048):
                 raise ValueError("요청 크기를 확인해 주세요.")
             payload = json.loads(self.rfile.read(size))
-            if not isinstance(payload, dict) or not isinstance(payload.get("separationDate"), str):
+            if free:
+                question, day = free_question.inputs(payload)
+            elif not isinstance(payload, dict) or not isinstance(payload.get("separationDate"), str):
                 raise ValueError("이직일이 필요합니다.")
         except (ValueError, TypeError) as e:
             self.json_response({"error": str(e)}, 400)
@@ -72,7 +76,7 @@ class Handler(SimpleHTTPRequestHandler):
         if not MODEL_LOCK.acquire(blocking=False):
             self.json_response({"error": "다른 모델 요청이 진행 중입니다."}, 429)
             return
-        streamed = "application/x-ndjson" in self.headers.get("Accept", "")
+        streamed = not free and "application/x-ndjson" in self.headers.get("Accept", "")
         def send_event(event):
             self.wfile.write((json.dumps(event, ensure_ascii=False) + "\n").encode("utf-8"))
             self.wfile.flush()
@@ -83,7 +87,9 @@ class Handler(SimpleHTTPRequestHandler):
             self.send_header("X-Accel-Buffering", "no")
             self.end_headers()
         try:
-            if streamed:
+            if free:
+                self.json_response(free_question.consult(question, day, self.server.qa_provider))
+            elif streamed:
                 result = model.explain(payload["separationDate"], on_progress=lambda state: send_event({"type": "status", **state}))
                 send_event({"type": "result", **result})
             else:
@@ -91,6 +97,10 @@ class Handler(SimpleHTTPRequestHandler):
         except (BrokenPipeError, ConnectionResetError):
             pass
         except ValueError as e:
+            if free:
+                self.log_error("consultation failed (%s)", type(e).__name__)
+                self.json_response({"error": "상담 응답을 생성하지 못했습니다. 잠시 후 다시 시도해 주세요."}, 502)
+                return
             if streamed:
                 send_event({"type": "error", "error": str(e)})
             else:
@@ -121,8 +131,10 @@ class Handler(SimpleHTTPRequestHandler):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", type=int, default=8765)
+    parser.add_argument("--qa-provider", default="codex", choices=("codex", "nvidia", "openai", "gemini", "claude"))
     args = parser.parse_args()
     server = ThreadingHTTPServer(("127.0.0.1", args.port), partial(Handler, directory=str(ROOT)))
+    server.qa_provider = args.qa_provider
     print(f"Local: http://127.0.0.1:{args.port}/view/", flush=True)
     try:
         server.serve_forever()
