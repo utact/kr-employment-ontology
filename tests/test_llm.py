@@ -7,8 +7,9 @@ import pytest
 import llm
 
 
-@pytest.mark.parametrize("used_tool", [False, True])
-def test_subscription_turn_uses_the_selected_policy_without_external_sources(monkeypatch, used_tool):
+@pytest.mark.parametrize("tool", [None, {"type": "web_search"},
+                                 {"type": "mcp_tool_call", "server": "codex", "tool": "list_mcp_resources"}])
+def test_subscription_turn_uses_the_selected_policy_without_external_sources(monkeypatch, tool):
     import shutil
     import subprocess
 
@@ -20,16 +21,18 @@ def test_subscription_turn_uses_the_selected_policy_without_external_sources(mon
     def run(command, **kwargs):
         assert "forced_login_method=chatgpt" in command and "model_reasoning_effort=medium" in command
         assert "web_search=disabled" in command and "OPENAI_API_KEY" not in kwargs["env"]
+        assert "mcp_servers={}" in command and "skills.include_instructions=false" in command
+        assert any(arg.startswith("developer_instructions=") and "Do not call any tool" in arg for arg in command)
         assert kwargs["input"] == "질문" and (Path(kwargs["cwd"]) / "instructions.md").read_text(encoding="utf8") == "지시"
         events = [{"type": "item.completed", "item": {"type": "agent_message", "text": '{"ok":true}'}},
                   {"type": "turn.completed", "usage": {"input_tokens": 7, "output_tokens": 3}}]
-        if used_tool:
-            events.insert(0, {"type": "item.started", "item": {"type": "web_search"}})
+        if tool:
+            events.insert(0, {"type": "item.started", "item": tool})
         return SimpleNamespace(returncode=0, stdout="\n".join(json.dumps(e) for e in events))
 
     monkeypatch.setattr(subprocess, "run", run)
-    if used_tool:
-        with pytest.raises(ValueError, match="외부 작업"):
+    if tool:
+        with pytest.raises(ValueError, match=tool.get("tool", tool["type"])):
             llm.complete("지시", "질문", "codex")
     else:
         result = llm.complete("지시", "질문", "codex")

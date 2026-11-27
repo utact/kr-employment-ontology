@@ -140,6 +140,11 @@ def codex_cli(system, user, config):
                    "--sandbox", "read-only", "--json", "-m", config["model"],
                    "-c", "forced_login_method=chatgpt", "-c", "model_provider=openai",
                    "-c", "web_search=disabled", "-c", "project_doc_max_bytes=0",
+                   "-c", "mcp_servers={}", "-c", "skills.include_instructions=false",
+                   "-c", 'developer_instructions="Complete this single turn directly from the supplied messages '
+                         'and the knowledge permitted by the task. Do not call any tool, including listing MCP '
+                         'resources, reading files, searching, or asking the user through a tool. Express missing '
+                         'information in the requested JSON response."',
                    "-c", "model_reasoning_effort=" + config["effort"],
                    "-c", "model_instructions_file=" + prompt.as_posix()]
         for feature in ("shell_tool", "unified_exec", "apps", "plugins", "multi_agent", "multi_agent_v2", "hooks", "memories"):
@@ -159,7 +164,8 @@ def codex_cli(system, user, config):
         if event["type"].startswith("item."):
             item = event["item"]
             if item["type"] not in ("agent_message", "reasoning"):
-                raise ValueError("외부 작업이 포함된 응답은 비교에서 제외합니다.")
+                tool = (str(item.get("server", "")) + "/" + str(item.get("tool", ""))).strip("/")
+                raise ValueError(f"외부 작업이 포함된 응답은 비교에서 제외합니다. ({tool or item['type']})")
             if event["type"] == "item.completed" and item["type"] == "agent_message":
                 message = item["text"]
         if event["type"] == "turn.completed":
