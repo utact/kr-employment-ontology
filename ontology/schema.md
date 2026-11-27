@@ -408,6 +408,7 @@ instance가 아니라 wiki 노트 자체를 설명하는 property다.
 | `sha256` | `spdx:checksumValue` | 예 | 정규화한 본문의 SHA-256 hash |
 | `license` | `dct:license` | 예 | 이용 조건 |
 | `modified` | `dct:modified` | 아니요 | 원문이 밝힌 최종 수정일 (date) |
+| `issued` | `dct:issued` | 아니요 | 수집한 판본의 공개일 (date) |
 | `hasPart` | `dct:hasPart` | 아니요 | Git에 남기는 짧은 인용 (`Quotation`) |
 
 - `identifier`: instance의 IRI는 base IRI 뒤에 identifier를 붙여 만든다.

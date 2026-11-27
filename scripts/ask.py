@@ -110,7 +110,11 @@ class Note:
         self.type = self.meta.get("type")
         self.statute = self.type in STATUTE_TYPES
         self.blocks = block_texts(body)
-        prose = FOOTNOTE_REF.sub("", FOOTNOTE_DEF.sub("", body))
+        self.quotation_refs = {line.split(":", 1)[0]: [(name, anchor) for name, anchor in links(line)
+                               if anchor and re.fullmatch(r"q[1-9]\d*", anchor)]
+                               for line in FOOTNOTE_DEF.findall(body)}
+        self.annotated_body = FOOTNOTE_DEF.sub("", body)
+        prose = FOOTNOTE_REF.sub("", self.annotated_body)
         self.prose = re.sub(r"\s+\^[a-z0-9-]+\s*$", "", prose, flags=re.M).strip()
         self.relations = [(key, target, block) for key, value in self.meta.items()
                           if key not in PROVENANCE for target, block in links(value)]
@@ -119,6 +123,15 @@ class Note:
     def text(self, block):
         """Text of a block with its children, such as the 호 of a 항 and the 목 of a 호, in document order."""
         return "\n".join(self.blocks[b] for b in self.blocks if b == block or b.startswith(block + "-"))
+
+    def prose_on(self, day, quotations):
+        """Keep later administrative readings out of historical inputs, including the note paraphrase."""
+        future = {ref for ref, targets in self.quotation_refs.items() if day and
+                  any(target in quotations and quotations[target]["availableFrom"] > day for target in targets)}
+        if not future:
+            return self.prose
+        return "\n".join(FOOTNOTE_REF.sub("", line) for line in self.annotated_body.splitlines()
+                         if not future.intersection(FOOTNOTE_REF.findall(line))).strip()
 
     def versions(self):
         """Versions of a statute unit as (first, last) ISO dates, last None while in force."""
@@ -415,7 +428,7 @@ def raw_quotations(path):
     label = path.stem.rsplit(" ", 1)[0]
     if meta["identifier"].startswith("raw-work24-"):
         label = "고용24 " + label
-    available = meta.get("modified") or meta["generatedAtTime"][:10]
+    available = meta.get("modified") or meta.get("issued") or meta["generatedAtTime"][:10]
     if path.parent.name in {"판례", "법령해석례"}:
         service, field = ("PrecService", "선고일자") if path.parent.name == "판례" else ("ExpcService", "해석일자")
         response = path.with_suffix(".json")
@@ -444,15 +457,16 @@ def context(index, retrieval, facts=None, note_chars=1200, consultation_day=None
                     "hasRequirement", "constrains", "requires", "hasConcept"):
             if key in meta:
                 entry[key] = meta[key]
-        entry["body"] = note.prose[:note_chars]
+        entry["body"] = note.prose_on(consultation_day, index.quotations)[:note_chars]
         notes.append(entry)
     evidence = []
-    for number, block in enumerate(retrieval["blocks"], start=1):
+    for block in retrieval["blocks"]:
+        number = len(evidence) + 1
         if "quotation" in block:
+            if consultation_day and block["availableFrom"] > consultation_day:
+                continue
             entry = {"key": f"E{number}", "citation": block["quotation"], "link": f"{block['note']}#^{block['block']}",
                      "sourceUrl": block["sourceUrl"], "availableFrom": block["availableFrom"], "text": block["text"]}
-            if consultation_day and block["availableFrom"] > consultation_day:
-                entry["versionNote"] = "상담 당시 이용 가능한 인용문인지 확인할 수 없음"
             evidence.append(entry)
             continue
         note = index.notes[block["note"]]

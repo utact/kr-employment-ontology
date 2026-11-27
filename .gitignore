@@ -15,6 +15,8 @@ __pycache__/
 # Sources kept local: uncited versions and 고용24 pages
 .cache/
 raw/work24/**/*.html
+raw/moel/**/*.html
+raw/moel/**/*.hwp
 
 # Local tools and test output
 .claude/worktrees/

@@ -265,7 +265,12 @@ def check_notes(problems):
         if missing:
             problems.append(f"{note.relative_to(L.VAULT)}: missing {missing}")
         payload, page = note.with_suffix(".json"), note.with_suffix(".html")
-        if payload.exists():
+        if note.parent.parent == L.RAW / "moel":
+            sections = collect.quote_source(note)
+            if sections is None:
+                continue  # The unabridged copy is local, as for Work24.
+            digest = L.body_hash("\n".join(sections.values()))
+        elif payload.exists():
             text = payload.read_text(encoding="utf-8")
             stored = attachments(note, json.loads(text))
             if note in latest and len(stored) != L.attachment_count(json.loads(text)):
@@ -283,6 +288,7 @@ def check_notes(problems):
 def check_quotations(problems):
     """Quotations of 고용24, 법령해석례 and 판례 raw notes: numbered in the order of hasPart, declared as blocks with the same text, hashed, and found in the stored source."""
     notes = sorted((L.RAW / "work24").rglob("*.md"))
+    notes += sorted((L.RAW / "moel").rglob("*.md"))
     for kind in (L.INTERPRETATIONS, L.PRECEDENTS):
         notes += sorted((L.RAW / "law" / kind).glob("*.md"))
     for note in notes:

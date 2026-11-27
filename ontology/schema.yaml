@@ -548,6 +548,7 @@ classes:
       - sha256
       - license
       - modified
+      - issued
       - hasPart
     slot_usage:
       identifier:
@@ -999,6 +1000,10 @@ slots:
     slot_uri: dct:modified
     range: date
     description: 원문이 밝힌 최종 수정일
+  issued:
+    slot_uri: dct:issued
+    range: date
+    description: 수집한 판본의 공개일
 
   things:
     description: 검증할 instance 목록

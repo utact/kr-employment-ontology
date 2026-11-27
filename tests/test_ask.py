@@ -145,6 +145,22 @@ def test_statute_table_citation_preserves_values_and_cell_boundaries():
             ask.render(statement(changed), [source])
 
 
+def test_future_guidance_is_absent_from_both_evidence_and_note_prose(tmp_path):
+    from types import SimpleNamespace
+
+    path = tmp_path / "노트.md"
+    path.write_text("---\ntype: Concept\n---\n기존 안내\n후속 해석[^1]\n\n[^1]: [[자료#^q1|지침]]\n",
+                    encoding="utf-8")
+    quote = {"note": "자료", "block": "q1", "quotation": "지침", "text": "지침 원문", "sourceUrl": "url",
+             "availableFrom": "2022-06-15"}
+    index = SimpleNamespace(notes={"노트": ask.Note(path)}, quotations={("자료", "q1"): quote})
+    retrieval = {"asOf": "2022-06-14", "notes": [{"note": "노트"}], "blocks": [quote]}
+    before = ask.context(index, retrieval, consultation_day="2022-06-14")
+    assert before["notes"][0]["body"] == "기존 안내" and before["evidence"] == []
+    after = ask.context(index, retrieval, consultation_day="2022-06-15")
+    assert "후속 해석" in after["notes"][0]["body"] and after["evidence"][0]["text"] == "지침 원문"
+
+
 def test_total_can_reuse_a_verified_daily_amount_shown_to_the_user():
     source = {**SOURCE, "text": "시간급 10,000원"}
     result = statement(source["text"])

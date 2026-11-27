@@ -17,6 +17,7 @@ These rules govern how raw sources are collected and stored, how statute notes a
 - Use one folder per publisher.
   - `raw/law/`: 법제처, for 법령, 행정규칙, 법령해석례 and 판례
   - `raw/work24/`: 고용24 guides
+  - `raw/moel/`: 고용노동부 administrative guidance. Collect the dated editions in `scripts/sources.yaml` with `scripts/collect.py moel`. Keep full HTML and HWP copies locally. Use `quote` to cite an excerpt from the FAQ answer or the HWP body. For a mirrored attachment, distinguish the issuing office and issue date from the host and posting date. The posting date determines when the chatbot may cite that copy.
   - `raw/stats/`: EIS, KOSIS and 공공데이터포털
 - Give every raw note a basename that is unique in the vault: the source name, its version and the retrieval time in KST.
   - 법령: `raw/law/<법령명>/<법령명> <시행일자>-<MST> <YYYYMMDDTHHMM>.md`

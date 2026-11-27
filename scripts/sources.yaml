@@ -128,6 +128,20 @@ precedents:
   - id: "125316"
   - id: "233061"
   - id: "147839"
+moel:
+  - id: faq-1000001220
+    name: 고용노동부 FAQ 조기재취업수당 요건
+    description: 고용노동부 고객상담센터가 게시한 FAQ다.
+    url: https://1350.moel.go.kr/home/hp/data/faqView.do?faq_idx=1000001220
+    publication: "2022-06-15"
+    answerHash: 78724fecac351ea0a8b35dcd9dcfc7df594e29bbd6b9f49a19696acf6346f2c7
+  - id: unemployment-insurance-after-65
+    name: 고용노동부 65세 이상 실업급여 적용 관련 업무처리 지침
+    description: 고용노동부 고용지원실업급여과가 2018-12-28 작성한 지침이다. 링크는 노무법인 지노의 2019-04-12 재게시본이다.
+    url: https://www.jinolabor.com/sub4/4_1.php?b_name=data1&mode=view&number=477&page=1
+    attachment: https://www.jinolabor.com/bbs_sun/download.php?b_name=data1&filename=data1_201904121053140.hwp&oriname=guide.hwp
+    publication: "2019-04-12"
+    fileHash: bf9523e748cc91a7a7544b1b23076e5d1952fa5353085e0237eb485ba45d37be
 shapes:
   - name: CPSV-AP 3.2.0
     file: cpsv-ap-3.2.0-shacl.ttl

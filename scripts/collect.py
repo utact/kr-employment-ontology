@@ -1,7 +1,7 @@
 """Collect raw sources listed in scripts/sources.yaml.
 
 Usage:
-    uv run python -X utf8 scripts/collect.py [laws|admrul|work24|interpretations|shapes|cited|all]
+    uv run python -X utf8 scripts/collect.py [laws|admrul|work24|moel|interpretations|shapes|cited|all]
     uv run python -X utf8 scripts/collect.py quote <page name> <section> <text>
     uv run python -X utf8 scripts/collect.py changes YYYY-MM-DD YYYY-MM-DD
 
@@ -14,10 +14,13 @@ quote appends a short quotation to the latest raw note of a 고용24 guide or a 
 
 import hashlib
 import html as htmllib
+import io
 import json
 import re
+import struct
 import sys
 import urllib.parse
+import zlib
 from pathlib import Path
 from datetime import date
 
@@ -455,9 +458,80 @@ def collect_precedents(stamp, generated, report):
         print(f"판례 {source['id']} ({service['사건번호']}): written {written}")
 
 
+def guidance_sections(data, suffix):
+    """Read the FAQ answer or paragraphs in a compressed HWP 5 body."""
+    if suffix == ".html":
+        page = data.decode("utf-8")
+        cell = re.search(r">답변</th>\s*<td\b[^>]*>(.*?)</td>", page, re.S)
+        if cell is None:
+            raise ValueError("고용노동부 FAQ 답변을 찾을 수 없음")
+        return {"답변": htmllib.unescape(re.sub(r"<[^>]*>", " ", cell[1]))}
+    import olefile
+
+    lines = []
+    with olefile.OleFileIO(io.BytesIO(data)) as doc:
+        compressed = doc.openstream("FileHeader").read()[36] & 1
+        sections = [s for s in doc.listdir() if s[0] == "BodyText" and re.fullmatch(r"Section\d+", s[-1])]
+        for section in sorted(sections, key=lambda s: int(s[-1][7:])):
+            records = doc.openstream(section).read()
+            if compressed:
+                records = zlib.decompress(records, -15)
+            offset = 0
+            while offset < len(records):
+                header, = struct.unpack_from("<I", records, offset)
+                size = header >> 20
+                offset += 4
+                if size == 4095:
+                    size, = struct.unpack_from("<I", records, offset)
+                    offset += 4
+                if offset + size > len(records):
+                    raise ValueError("잘린 HWP 본문 레코드")
+                if (header & 1023) == 67:  # HWPTAG_PARA_TEXT
+                    lines.append(records[offset:offset + size].decode("utf-16le").strip())
+                offset += size
+    return {"본문": "\n".join(lines)}
+
+
+def collect_guidance(stamp, generated):
+    for source in SOURCES["moel"]:
+        url = source["url"]
+        data = L.get(source.get("attachment", url))
+        suffix = ".hwp" if "attachment" in source else ".html"
+        if suffix == ".hwp":
+            # The mirror prepends a browser script to the intact OLE attachment.
+            data = data[data.index(bytes.fromhex("d0cf11e0a1b11ae1")):]
+            if hashlib.sha256(data).hexdigest() != source["fileHash"]:
+                raise ValueError(f"{url}: 지침 판본 변경")
+        sections = guidance_sections(data, suffix)
+        digest = L.body_hash("\n".join(sections.values()))
+        if suffix == ".html" and (digest != source["answerHash"] or
+                f"<time>{source['publication']}</time>" not in data.decode("utf-8")):
+            raise ValueError(f"{url}: FAQ 판본 변경")
+        title = source["name"]
+        folder = L.RAW / "moel" / title
+        name = f"{title} {stamp}"
+        previous = latest(folder, f"{title} *.md")
+        if previous and L.frontmatter(previous)["sha256"] == digest:
+            original = previous.with_suffix(suffix)
+            if not original.exists():
+                original.write_bytes(data)
+            continue
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / (name + suffix)).write_bytes(data)
+        meta = {"identifier": f"raw-moel-{source['id']}-{stamp.lower()}", "title": title,
+                "publisher": "ministry-of-employment-and-labor", "url": url, "generatedAtTime": generated,
+                "issued": source["publication"], "sha256": digest, "license": "원본 로컬 보관, 출처 표시 후 일부 인용"}
+        L.write_note(folder / (name + ".md"), meta, source["description"])
+
+
 def quote_source(note):
     """The sections a quotation of a raw note must come from, or None when the source is not stored here."""
     payload, page = note.with_suffix(".json"), note.with_suffix(".html")
+    if note.parent.parent.name == "moel":
+        for path in (page, note.with_suffix(".hwp")):
+            if path.exists():
+                return guidance_sections(path.read_bytes(), path.suffix)
+        return None
     if payload.exists():
         response = json.loads(payload.read_text(encoding="utf-8"))
         if "ExpcService" in response:
@@ -485,6 +559,8 @@ def quote(name, section, text, raw=None):
     """
     root = raw or L.RAW
     folder = root / "work24" / name
+    if (root / "moel" / name).is_dir():
+        folder = root / "moel" / name
     for kind in (L.INTERPRETATIONS, L.PRECEDENTS):
         if name.startswith(f"{kind} "):
             folder = root / "law" / kind
@@ -561,6 +637,8 @@ def main():
     as_of, window_start = L.release()
     stamp_time, stamp = L.now()
     generated = stamp_time.isoformat()
+    if what in ("moel", "all"):
+        collect_guidance(stamp, generated)
     report = {"asOf": str(as_of), "windowStart": str(window_start), "stamp": stamp, "laws": [], "admrul": [], "work24": [], "shapes": [], "cited": []}
     if what in ("laws", "all"):
         collect_laws(as_of, window_start, stamp, generated, report)

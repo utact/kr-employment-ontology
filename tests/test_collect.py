@@ -6,6 +6,7 @@ from datetime import date
 import pytest
 
 import collect
+import lawlib as L
 
 
 def test_announcements_use_publication_not_effective_date_and_deduplicate(monkeypatch):
@@ -71,6 +72,28 @@ def guide(tmp_path):
     (folder / "실업급여(상용직) 20261015T1337.md").write_text(NOTE, encoding="utf-8", newline="\n")
     (folder / "실업급여(상용직) 20261015T1337.html").write_text(PAGE, encoding="utf-8", newline="\n")
     return folder / "실업급여(상용직) 20261015T1337.md"
+
+
+def test_guidance_quotes_only_the_dated_faq_answer(tmp_path, monkeypatch):
+    source = {"name": "상담 FAQ", "id": "faq", "publication": "2022-06-15",
+              "description": "기관 안내", "url": "https://example.org/faq", "answerHash": L.body_hash("공식 안내")}
+    page = ("<time>2022-06-15</time><table><th>질의</th><td>질문자의 추측</td>"
+            "<th>답변</th><td><p>공식 안내</p></td></table>").encode()
+    monkeypatch.setattr(collect, "SOURCES", {"moel": [source]})
+    monkeypatch.setattr(L, "RAW", tmp_path)
+    monkeypatch.setattr(L, "get", lambda url: page)
+    collect.collect_guidance("20261127T0001", "2026-11-27T00:01:00+09:00")
+    note, = tmp_path.rglob("*.md")
+    assert L.frontmatter(note)["issued"] == "2022-06-15"
+    assert collect.quote_source(note) == {"답변": " 공식 안내 "}
+    with pytest.raises(SystemExit):
+        collect.quote("상담 FAQ", "답변", "질문자의 추측", tmp_path)
+    note.with_suffix(".html").unlink()
+    collect.collect_guidance("20261128T0001", "2026-11-28T00:01:00+09:00")
+    assert note.with_suffix(".html").read_bytes() == page
+    monkeypatch.setattr(L, "get", lambda url: page.replace("공식".encode(), "새로운".encode()))
+    with pytest.raises(ValueError, match="판본 변경"):
+        collect.collect_guidance("20261128T0002", "2026-11-28T00:02:00+09:00")
 
 
 def test_quote_appends_a_checked_quotation(tmp_path):
