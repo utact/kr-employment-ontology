@@ -383,6 +383,8 @@ ANSWER_FORMAT = (
     '형식은 {"text":"고객에게 보여줄 문장","support":[{"key":"E1","quote":"해당 원문의 연속된 정확한 인용"}]}다. '
     'text에는 근거 번호를 적지 않는다. 근거 제공 모드에서는 각 항목에 결론을 뒷받침하는 원문을 연결한다. '
     '원문에 직접 없는 금액을 계산하면 해당 항목의 formulas에 사칙연산 식을 넣는다. '
+    '개인의 급여액에 필요한 이직일·1일 소정근로시간·임금이 빠졌으면 임의로 가정하지 말고 필요한 값만 묻는다. '
+    '자격·지급기간·신청기한과 개인별 금액은 독립된 항목으로 쓰고, 금액을 몰라도 설명할 수 있는 부분은 답한다. '
     '예를 들어 시급과 시간, 비율의 곱은 "시급에 해당하는 숫자 * 시간에 해당하는 숫자 * 소수 비율" 형식이다. '
     '자료 없는 대조 모드에서는 기억한 자료를 원문처럼 인용하지 않고 support를 빈 배열로 둔다. '
     'questions는 답을 가르는 사실 중 사용자가 아직 말하지 않은 것을 묻는 배열이다. '
@@ -684,14 +686,33 @@ def check_amounts(statement, question, support):
     missing = amounts - {n for kind, n, unit in tokens if kind == "number" and unit == "원"}
     if missing:
         operands = {n for kind, n, _ in tokens if kind in ("number", "ratio")}
+        if any("소정근로시간" in s["quote"] for s in support):
+            stated_hours = {n for _, n, unit in quantity_tokens(statement["text"]) if unit == "시간"}
+            input_hours = {n for _, n, unit in quantity_tokens(question) if unit == "시간"}
+            if stated_hours - input_hours:
+                raise ValueError("개인별 급여 계산에 필요한 소정근로시간이 질문에 없음")
         formulas = statement.get("formulas", [])
         if not isinstance(formulas, list) or len(formulas) > 12:
             raise ValueError("금액 산식 형식 오류")
-        if missing - {computed_amount(f, operands) for f in formulas}:
+        # The calendar conversion applies to an explicit monthly wage, not to arbitrary arithmetic.
+        monthly = {n for match in re.finditer(rf"월\s*({L.AMOUNT_TOKEN.pattern})\s*원", source)
+                   for _, n, unit in quantity_tokens(match[0]) if unit == "원"}
+        annual_formulas = set()
+        if re.search(r"연봉|연간|연액|12개월", statement["text"]):
+            for wage in monthly:
+                annual_formulas.update((f"{wage}*12", f"12*{wage}"))
+        verified = set()
+        for formula in formulas:
+            allowed = operands | (verified & amounts)
+            if isinstance(formula, str) and "".join(formula.split()) in annual_formulas:
+                allowed.add(12)
+            result = computed_amount(formula, allowed)
+            verified.add(result)
+        if missing - verified:
             raise ValueError("인용·입력·산식에서 확인되지 않는 금액")
 
 
-def render(model_output, evidence, grounded=True, question=""):
+def render(model_output, evidence, grounded=True, question="", *, amount_errors=None):
     """Build the public answer from statements. An invalid citation invalidates the entire draft."""
     if not isinstance(model_output, dict):
         raise ValueError("응답 객체 누락")
@@ -710,6 +731,7 @@ def render(model_output, evidence, grounded=True, question=""):
         raise ValueError("답변 문장 누락")
     sources = {e["key"]: e for e in evidence}
     paragraphs, citations = [], []
+    ask_hours = False
     for statement in statements:
         if not isinstance(statement, dict):
             raise ValueError("답변 문장 형식 오류")
@@ -730,9 +752,24 @@ def render(model_output, evidence, grounded=True, question=""):
                 raise ValueError(f"{key} 원문과 인용 불일치")
             keys.append(key)
         if grounded:
-            check_amounts(statement, question, support)
+            try:
+                check_amounts(statement, question, support)
+            except ValueError as exc:
+                if amount_errors is None:
+                    raise
+                amount_errors.append(str(exc))
+                if any("소정근로시간" in s["quote"] for s in support):
+                    ask_hours = not any(unit == "시간" for _, _, unit in quantity_tokens(question))
+                continue
         citations.extend(keys)
         paragraphs.append(text.strip() + "".join(f"[{k}]" for k in dict.fromkeys(keys)))
+    if amount_errors:
+        if ask_hours and not any(re.search("근로시간|하루.{0,15}시간", q) for q in questions):
+            questions = [*questions, "퇴사 전 하루 소정근로시간은 몇 시간이었나요?"]
+        if not paragraphs and not questions:
+            raise ValueError(amount_errors[0])
+        paragraphs.append("확인한 정보만으로는 요청하신 금액을 모두 산정할 수 없습니다.")
+        action = "clarify" if questions else "conditional"
     return {"action": action, "answer": "\n\n".join(paragraphs), "questions": questions,
             "citations": list(dict.fromkeys(citations))}
 
@@ -794,8 +831,9 @@ def generate(payload, provider=None, check=True):
                 usage[key] = usage.get(key, 0) + value
         duration += checked["durationMs"]
     try:
-        output = render(candidate, evidence, grounded, payload["question"])
-        problems = check_answer(output, payload) if grounded else []
+        amount_errors = []
+        output = render(candidate, evidence, grounded, payload["question"], amount_errors=amount_errors)
+        problems = amount_errors + (check_answer(output, payload) if grounded else [])
         status = "declined" if output["action"] == "decline" else "answered"
     except ValueError as exc:
         output = {"action": "conditional", "answer": "확인한 근거만으로는 이 질문에 신뢰할 만한 답을 드리기 어렵습니다.",

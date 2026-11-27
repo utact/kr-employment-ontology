@@ -124,6 +124,45 @@ def test_new_amount_must_follow_from_cited_operands_and_user_hours():
             ask.render(result, [source], question="하루 7시간 반")
 
 
+def test_monthly_wage_can_be_annualized_without_allowing_twelve_for_other_amounts():
+    source = {**SOURCE, "text": "월 5,740,000원"}
+    result = statement(source["text"])
+    line = result["statements"][0]
+    line.update(text="연간 68,880,000원입니다.", formulas=["5740000 * 12"])
+    assert "68,880,000원" in ask.render(result, [source])["answer"]
+    line["text"] = "하루 68,880,000원입니다."
+    with pytest.raises(ValueError, match="산식"):
+        ask.render(result, [source])
+
+
+def test_total_can_reuse_a_verified_daily_amount_shown_to_the_user():
+    source = {**SOURCE, "text": "시간급 10,000원"}
+    result = statement(source["text"])
+    line = result["statements"][0]
+    line.update(text="하루 80,000원이고 총 240,000원입니다.", formulas=["10000 * 8", "80000 * 3"])
+    question = "하루 8시간씩 3일입니다."
+    assert "240,000원" in ask.render(result, [source], question=question)["answer"]
+    line["formulas"] = ["80000 * 3"]
+    with pytest.raises(ValueError, match="산식"):
+        ask.render(result, [source], question=question)
+
+
+def test_unstated_workday_withholds_estimate_but_retains_eligibility_and_clarification():
+    source = {"key": "E2", "text": "시간급 10,000원에 1일 소정근로시간을 곱한다."}
+    result = statement()
+    result["statements"].append({"text": "8시간이면 80,000원입니다.", "formulas": ["10000 * 8"],
+                                 "support": [{"key": "E2", "quote": source["text"]}]})
+    errors = []
+    out = ask.render(result, [SOURCE, source], question="근속 8년입니다.", amount_errors=errors)
+    assert errors and out["action"] == "clarify" and out["citations"] == ["E1"]
+    assert "지정한 날" in out["answer"] and "80,000원" not in out["answer"]
+    assert len(out["questions"]) == 1 and "소정근로시간" in out["questions"][0]
+    assert "80,000원" in ask.render(result, [SOURCE, source], question="하루 8시간입니다.")["answer"]
+    result["statements"][0]["support"][0]["quote"] = "없는 내용"
+    with pytest.raises(ValueError, match="인용 불일치"):
+        ask.render(result, [SOURCE, source], amount_errors=[])
+
+
 @pytest.mark.parametrize("hours", ["7시간 반", "7시간 30분", "7.5시간"])
 def test_calculation_cannot_drop_part_of_the_users_workday(hours):
     source = {**SOURCE, "text": "시간급 10,000원"}
