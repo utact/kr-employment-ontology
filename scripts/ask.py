@@ -689,7 +689,7 @@ def check_amounts(statement, question, support):
         if any("소정근로시간" in s["quote"] for s in support):
             stated_hours = {n for _, n, unit in quantity_tokens(statement["text"]) if unit == "시간"}
             input_hours = {n for _, n, unit in quantity_tokens(question) if unit == "시간"}
-            if stated_hours - input_hours:
+            if not input_hours or stated_hours - input_hours:
                 raise ValueError("개인별 급여 계산에 필요한 소정근로시간이 질문에 없음")
         formulas = statement.get("formulas", [])
         if not isinstance(formulas, list) or len(formulas) > 12:
@@ -710,6 +710,12 @@ def check_amounts(statement, question, support):
             verified.add(result)
         if missing - verified:
             raise ValueError("인용·입력·산식에서 확인되지 않는 금액")
+
+
+def citation_text(text):
+    """Ignore whitespace and horizontal rule widths, preserving each table cell and its contents."""
+    text = re.sub(r"(?<=[┌┬├┼└┴])─+(?=[┬┐┼┤┴┘])", "─", text)
+    return " ".join(text.split())
 
 
 def render(model_output, evidence, grounded=True, question="", *, amount_errors=None):
@@ -748,7 +754,7 @@ def render(model_output, evidence, grounded=True, question="", *, amount_errors=
             source = sources.get(key) if isinstance(key, str) else None
             if not source or source.get("versionNote") or not isinstance(quote, str) or not quote.strip():
                 raise ValueError("유효한 시행본의 근거가 필요함")
-            if " ".join(quote.split()) not in " ".join(source["text"].split()):
+            if citation_text(quote) not in citation_text(source["text"]):
                 raise ValueError(f"{key} 원문과 인용 불일치")
             keys.append(key)
         if grounded:

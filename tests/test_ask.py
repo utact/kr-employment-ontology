@@ -135,6 +135,16 @@ def test_monthly_wage_can_be_annualized_without_allowing_twelve_for_other_amount
         ask.render(result, [source])
 
 
+def test_statute_table_citation_preserves_values_and_cell_boundaries():
+    table = "│A│120일│150일│\n├─┼────┼────┤\n│B│120일│180일│"
+    source = {**SOURCE, "text": table}
+    quote = table.replace("├─┼", "├──┼")
+    assert ask.render(statement(quote), [source])["citations"] == ["E1"]
+    for changed in [quote.replace("150일", "180일"), quote.replace("┼────┼", "────")]:
+        with pytest.raises(ValueError, match="인용 불일치"):
+            ask.render(statement(changed), [source])
+
+
 def test_total_can_reuse_a_verified_daily_amount_shown_to_the_user():
     source = {**SOURCE, "text": "시간급 10,000원"}
     result = statement(source["text"])
@@ -158,6 +168,9 @@ def test_unstated_workday_withholds_estimate_but_retains_eligibility_and_clarifi
     assert "지정한 날" in out["answer"] and "80,000원" not in out["answer"]
     assert len(out["questions"]) == 1 and "소정근로시간" in out["questions"][0]
     assert "80,000원" in ask.render(result, [SOURCE, source], question="하루 8시간입니다.")["answer"]
+    result["statements"][1]["text"] = "하루 80,000원입니다."
+    with pytest.raises(ValueError, match="소정근로시간"):
+        ask.render(result, [SOURCE, source], question="근속 8년입니다.")
     result["statements"][0]["support"][0]["quote"] = "없는 내용"
     with pytest.raises(ValueError, match="인용 불일치"):
         ask.render(result, [SOURCE, source], amount_errors=[])
