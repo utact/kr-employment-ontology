@@ -78,6 +78,58 @@ def test_quotes_do_not_allow_unresolved_versions_or_wrong_units():
     assert ask.check_answer({"action": "answer", "answer": "10원[E1]", "citations": ["E1"]}, bundle)
 
 
+@pytest.mark.parametrize(("decision", "status"), [
+    ({"safeToOmit": [2]}, "answered"), ({"safeToOmit": []}, "unverified"),
+    ({"safeToOmit": [1]}, "unverified"), ({"safeToOmit": [True, 2]}, "unverified"),
+])
+def test_omission_needs_review_of_the_exact_remaining_answer(monkeypatch, decision, status):
+    candidate = statement()
+    candidate["statements"].append({"text": "방문 시 서류를 제출하세요.",
+                                    "support": [{"key": "E1", "quote": "제출"}]})
+    payload = ask.response_input("언제 신청해요?", "2026-10-01", "2026-10-01", [], [SOURCE], "vault")
+    audits = []
+
+    def complete(system, user, provider=None):
+        if system == ask.OMISSION_SYSTEM:
+            audits.append(json.loads(user))
+        return {"json": decision if audits else candidate, "model": "test", "usage": {"prompt_tokens": 1},
+                "durationMs": 1}
+
+    monkeypatch.setattr(llm, "complete", complete)
+    result = ask.generate(payload)
+    assert result["status"] == status and result["usage"]["prompt_tokens"] == 3
+    audit, = audits
+    assert audit["reviewed"] == candidate and audit["evidence"] == [SOURCE]
+    assert audit["failed"] == {"2": "E1 원문과 인용 불일치"}
+    assert "제출" not in ask.customer_text(result)
+    if status == "answered":
+        assert result["output"] == audit["remaining"] == ask.render(statement(), [SOURCE])
+    else:
+        assert result["output"]["citations"] == []
+
+
+@pytest.mark.parametrize(("quote", "status"), [("지정한 날", "answered"), ("매주 수요일", "unverified")])
+def test_omission_can_narrow_scope_only_with_a_verified_assumption(monkeypatch, quote, status):
+    candidate = statement()
+    candidate["statements"].append(statement("없는 근거")["statements"][0])
+    assumption = {"text": "신청일을 지정받은 경우를 기준으로 설명합니다.",
+                  "support": [{"key": "E1", "quote": quote}]}
+
+    def complete(system, user, provider=None):
+        response = {"safeToOmit": [2], "assumption": assumption} if system == ask.OMISSION_SYSTEM else candidate
+        return {"json": response, "model": "test", "usage": {}, "durationMs": 1}
+
+    monkeypatch.setattr(llm, "complete", complete)
+    payload = ask.response_input("언제 신청해요?", "2026-10-01", "2026-10-01", [], [SOURCE], "vault")
+    result = ask.generate(payload)
+    assert result["status"] == status
+    if status == "answered":
+        assert result["output"]["action"] == "conditional"
+        assert result["output"]["answer"].startswith(assumption["text"] + "[E1]")
+    else:
+        assert not result["output"]["citations"]
+
+
 def test_relevant_blocks_keeps_exception_beyond_original_budget():
     class SourceNote:
         meta = {}
